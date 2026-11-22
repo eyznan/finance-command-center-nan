@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal Finance Command Center — Executive Dashboard</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              950: '#061a14',
+              900: '#0b2b22',
+              800: '#114234',
+              700: '#16654e',
+              600: '#059669',
+              500: '#10b981',
+              100: '#d1fae5',
+              50: '#ecfdf5',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      background-color: #f4f7f6;
+      color: #0f172a;
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    .card-elevated {
+      background: #ffffff;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .card-elevated:hover {
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 4px 10px -3px rgba(15, 23, 42, 0.03);
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    /* Heatmap cell transitions */
+    .heatmap-cell {
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .heatmap-cell:hover {
+      transform: translateY(-2px);
+      z-index: 20;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- ===================================================================== -->
+  <!-- TOP EXECUTIVE HEADER                                                  -->
+  <!-- ===================================================================== -->
+  <header class="bg-gradient-to-r from-slate-950 via-brand-950 to-slate-900 text-white border-b border-emerald-900/40 sticky top-0 z-40 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        
+        <!-- Brand & Title -->
+        <div class="flex items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-950/50 shrink-0">
+              <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h1 class="font-display font-bold text-lg sm:text-xl tracking-tight text-white">
+                  Personal Finance Command Center
+                </h1>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-white/10 text-emerald-300 border border-emerald-400/20">
+                  READ-ONLY VIEW
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Executive Financial Planning &bull; Kerangka 50/30/20 &bull; Likuiditas Cash &amp; Bank
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Koneksi & Kontrol Global -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <!-- Connection Status Pill -->
+          <button id="btnOpenGuide" type="button" class="group flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium bg-white/5 hover:bg-white/10 border border-white/10 transition text-left">
+            <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+            <span id="statusLabel" class="text-slate-200">Memeriksa Koneksi Sheet...</span>
+            <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+
+          <!-- Filter Bulan Global -->
+          <div class="flex items-center bg-white/10 border border-white/15 rounded-xl px-3 py-1.5">
+            <label for="monthSelector" class="text-[11px] font-semibold uppercase tracking-wider text-emerald-300 mr-2">Periode</label>
+            <select id="monthSelector" class="bg-transparent text-white text-xs sm:text-sm font-semibold focus:outline-none cursor-pointer pr-1">
+              <option value="2026-01" class="text-slate-900">Januari 2026 (2026-01)</option>
+              <option value="2026-02" class="text-slate-900">Februari 2026 (2026-02)</option>
+              <option value="2026-03" class="text-slate-900">Maret 2026 (2026-03)</option>
+              <option value="2026-04" class="text-slate-900">April 2026 (2026-04)</option>
+              <option value="2026-05" class="text-slate-900">Mei 2026 (2026-05)</option>
+              <option value="2026-06" class="text-slate-900">Juni 2026 (2026-06)</option>
+              <option value="2026-07" class="text-slate-900">Juli 2026 (2026-07)</option>
+              <option value="2026-08" class="text-slate-900">Agustus 2026 (2026-08)</option>
+              <option value="2026-09" class="text-slate-900">September 2026 (2026-09)</option>
+              <option value="2026-10" class="text-slate-900">Oktober 2026 (2026-10)</option>
+              <option value="2026-11" selected class="text-slate-900">November 2026 (2026-11)</option>
+              <option value="2026-12" class="text-slate-900">Desember 2026 (2026-12)</option>
+            </select>
+          </div>
+
+          <!-- Refresh Button -->
+          <button id="btnRefresh" type="button" title="Sinkronkan ulang dari Google Sheets" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition shadow-sm active:scale-95">
+            <svg id="refreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            <span class="hidden sm:inline">Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center gap-1.5 mt-4 pt-3 border-t border-white/10 overflow-x-auto no-scrollbar" aria-label="Dashboard Views">
+        <button data-tab="monthly" class="tab-btn active-tab flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-500 text-slate-950 shadow-sm transition whitespace-nowrap">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+          </svg>
+          Overview &amp; Bulanan
+        </button>
+        <button data-tab="weekly" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition whitespace-nowrap">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+          </svg>
+          Mingguan (Tactical)
+        </button>
+        <button data-tab="annual" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition whitespace-nowrap">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+          </svg>
+          Tahunan &amp; Kebebasan Finansial
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- PREVIEW BANNER (TAMPIL JIKA SHEET BELUM PUBLIC)                       -->
+  <!-- ===================================================================== -->
+  <div id="previewBanner" class="hidden bg-amber-50 border-b border-amber-200 text-amber-950">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-200 text-amber-900 font-bold shrink-0">!</span>
+        <span>
+          <strong>Preview Mode Aktif:</strong> Google Sheet Anda saat ini masih bersifat <em>Private</em> sehingga browser menampilkan snapshot data terbaru Anda.
+        </span>
+      </div>
+      <button type="button" onclick="openConnectionModal()" class="inline-flex items-center gap-1 font-semibold text-emerald-800 hover:text-emerald-950 underline underline-offset-2 shrink-0">
+        Lihat Panduan 1-Klik Hubungkan Live Sheet &rarr;
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN CONTENT CONTAINER                                                -->
+  <!-- ===================================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- =================================================================== -->
+    <!-- TAB 1: OVERVIEW & BULANAN                                           -->
+    <!-- =================================================================== -->
+    <section id="view-monthly" class="space-y-6">
+      
+      <!-- ROW 1: POSISI LIKUIDITAS DOMPET & SKOR KESEHATAN (4 KPI CARDS) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Card 1: Saldo Cash -->
+        <div class="card-elevated rounded-2xl p-5 relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Saldo Cash (Tunai)</span>
+            <span class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+              </svg>
+            </span>
+          </div>
+          <div id="kpiSaldoCash" class="font-display font-extrabold text-2xl text-slate-900 mt-3 tabular-nums">Rp 0</div>
+          <div class="mt-2 flex items-center justify-between text-xs text-slate-500">
+            <span>Saldo Awal: <strong id="kpiInitCash" class="text-slate-700 tabular-nums">Rp 0</strong></span>
+            <span id="kpiCashShare" class="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">0%</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Saldo Bank -->
+        <div class="card-elevated rounded-2xl p-5 relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Saldo Bank (m-Banking)</span>
+            <span class="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-100">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
+              </svg>
+            </span>
+          </div>
+          <div id="kpiSaldoBank" class="font-display font-extrabold text-2xl text-slate-900 mt-3 tabular-nums">Rp 0</div>
+          <div class="mt-2 flex items-center justify-between text-xs text-slate-500">
+            <span>Saldo Awal: <strong id="kpiInitBank" class="text-slate-700 tabular-nums">Rp 0</strong></span>
+            <span id="kpiBankShare" class="font-semibold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md">0%</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Total Uang Likuid -->
+        <div class="card-elevated rounded-2xl p-5 bg-gradient-to-br from-slate-900 to-brand-950 text-white border-slate-800">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-emerald-300">Total Uang Likuid</span>
+            <span class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-400/20">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" />
+              </svg>
+            </span>
+          </div>
+          <div id="kpiTotalLikuid" class="font-display font-extrabold text-2xl text-white mt-3 tabular-nums">Rp 0</div>
+          <!-- Stacked Liquidity Bar -->
+          <div class="mt-3">
+            <div class="w-full h-1.5 bg-white/15 rounded-full overflow-hidden flex">
+              <div id="barCashRatio" class="bg-amber-400 h-full transition-all duration-500" style="width: 50%"></div>
+              <div id="barBankRatio" class="bg-sky-400 h-full transition-all duration-500" style="width: 50%"></div>
+            </div>
+            <div class="flex justify-between text-[11px] text-slate-300 mt-1.5">
+              <span>Cash vs Bank</span>
+              <span id="kpiNetCashflowMonth" class="text-emerald-300 font-medium">Net Bulan Ini: Rp 0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Skor Kesehatan Arus Kas -->
+        <div class="card-elevated rounded-2xl p-5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Skor Kesehatan 50/30/20</span>
+            <span id="kpiHealthBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Sangat Sehat
+            </span>
+          </div>
+          <div class="flex items-baseline gap-2 mt-3">
+            <span id="kpiHealthScore" class="font-display font-extrabold text-3xl text-slate-900 tabular-nums">100</span>
+            <span class="text-sm font-semibold text-slate-400">/ 100</span>
+          </div>
+          <p id="kpiHealthNote" class="text-xs text-slate-500 mt-2 leading-relaxed">
+            Kepatuhan alokasi kebutuhan, gaya hidup &amp; rasio tabungan bulan terpilih.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- ROW 2: EVALUASI ANGGARAN 50/30/20 & BURN RATE ANALYTICS -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left 7 Cols: 50/30/20 Budget Allocation Engine -->
+        <div class="lg:col-span-7 card-elevated rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+              <div>
+                <h2 class="font-display font-bold text-base sm:text-lg text-slate-900">Evaluasi Anggaran 50 / 30 / 20</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Perbandingan realisasi bulan terpilih terhadap patokan Financial Planner</p>
+              </div>
+              <div class="bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-1.5 text-right">
+                <span class="block text-[10px] uppercase tracking-wider font-semibold text-slate-400">Basis Pemasukan / Target</span>
+                <span id="basisIncomeDisplay" class="font-display font-bold text-sm text-slate-900 tabular-nums">Rp 3.000.000</span>
+              </div>
+            </div>
+
+            <div class="space-y-5 mt-5">
+              <!-- NEEDS (50%) -->
+              <div>
+                <div class="flex flex-wrap items-center justify-between gap-1 text-sm mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                    <span class="font-bold text-slate-800">Needs (Kebutuhan Pokok)</span>
+                    <span class="text-xs text-slate-400 font-medium">Maks. 50%</span>
+                  </div>
+                  <div class="text-right tabular-nums">
+                    <span id="needsActualText" class="font-bold text-slate-900">Rp 0</span>
+                    <span class="text-xs text-slate-400"> / <span id="needsLimitText">Rp 1.500.000</span></span>
+                    <span id="needsPctBadge" class="ml-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700">0%</span>
+                  </div>
+                </div>
+                <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                  <div id="needsProgressBar" class="h-full bg-emerald-600 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-[11px] text-slate-500 mt-1">
+                  <span id="needsStatusText">Status: Sehat (&le;50%)</span>
+                  <span>Sisa Kuota: <strong id="needsRemainingText" class="text-slate-700 tabular-nums">Rp 1.500.000</strong></span>
+                </div>
+              </div>
+
+              <!-- WANTS (30%) -->
+              <div>
+                <div class="flex flex-wrap items-center justify-between gap-1 text-sm mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                    <span class="font-bold text-slate-800">Wants (Gaya Hidup)</span>
+                    <span class="text-xs text-slate-400 font-medium">Maks. 30%</span>
+                  </div>
+                  <div class="text-right tabular-nums">
+                    <span id="wantsActualText" class="font-bold text-slate-900">Rp 0</span>
+                    <span class="text-xs text-slate-400"> / <span id="wantsLimitText">Rp 900.000</span></span>
+                    <span id="wantsPctBadge" class="ml-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700">0%</span>
+                  </div>
+                </div>
+                <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                  <div id="wantsProgressBar" class="h-full bg-amber-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-[11px] text-slate-500 mt-1">
+                  <span id="wantsStatusText">Status: Terkendali (&le;30%)</span>
+                  <span>Sisa Kuota: <strong id="wantsRemainingText" class="text-slate-700 tabular-nums">Rp 900.000</strong></span>
+                </div>
+              </div>
+
+              <!-- SAVINGS (20%) -->
+              <div>
+                <div class="flex flex-wrap items-center justify-between gap-1 text-sm mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-sky-600"></span>
+                    <span class="font-bold text-slate-800">Savings &amp; Investasi</span>
+                    <span class="text-xs text-slate-400 font-medium">Min. 20%</span>
+                  </div>
+                  <div class="text-right tabular-nums">
+                    <span id="savingsActualText" class="font-bold text-slate-900">Rp 0</span>
+                    <span class="text-xs text-slate-400"> / <span id="savingsTargetText">Rp 600.000</span></span>
+                    <span id="savingsPctBadge" class="ml-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-amber-50 text-amber-700">0%</span>
+                  </div>
+                </div>
+                <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                  <div id="savingsProgressBar" class="h-full bg-sky-600 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-[11px] text-slate-500 mt-1">
+                  <span id="savingsStatusText">Status: Perlu Ditambah (&lt;20%)</span>
+                  <span>Selisih Target: <strong id="savingsDiffText" class="text-slate-700 tabular-nums">-Rp 600.000</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advisor Insight Box -->
+          <div id="fpAdvisorBox" class="mt-6 p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 flex items-start gap-3">
+            <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+              </svg>
+            </div>
+            <div class="text-xs text-slate-700 leading-relaxed">
+              <strong class="text-emerald-950 block mb-0.5">Catatan Financial Planner:</strong>
+              <span id="fpAdvisorMessage">Menganalisis pola arus kas bulan terpilih...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right 5 Cols: Burn Rate & Cash Flow Velocity -->
+        <div class="lg:col-span-5 card-elevated rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <div class="pb-4 border-b border-slate-100">
+              <h2 class="font-display font-bold text-base sm:text-lg text-slate-900">Burn Rate &amp; Kecepatan Belanja</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Kontrol likuiditas harian agar tidak jebol di akhir bulan</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-5">
+              <!-- Daily Burn Rate -->
+              <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Daily Burn Rate</span>
+                <div id="metricBurnRate" class="font-display font-extrabold text-lg text-slate-900 mt-1 tabular-nums">Rp 0</div>
+                <span class="text-[11px] text-slate-400 block mt-0.5">Rata-rata keluar / hari</span>
+              </div>
+
+              <!-- Safe to Spend -->
+              <div class="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-emerald-800">Safe-to-Spend / Hari</span>
+                <div id="metricSafeToSpend" class="font-display font-extrabold text-lg text-emerald-900 mt-1 tabular-nums">Rp 0</div>
+                <span id="metricDaysLeftNote" class="text-[11px] text-emerald-700 block mt-0.5">Batas aman sisa hari</span>
+              </div>
+
+              <!-- Proyeksi Akhir Bulan -->
+              <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Proyeksi Akhir Bulan</span>
+                <div id="metricProjectedSpend" class="font-display font-extrabold text-lg text-slate-900 mt-1 tabular-nums">Rp 0</div>
+                <span id="metricProjectionNote" class="text-[11px] text-slate-400 block mt-0.5">Jika ritme belanja tetap</span>
+              </div>
+
+              <!-- Pertumbuhan MoM -->
+              <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Belanja vs Bulan Lalu</span>
+                <div id="metricMoMGrowth" class="font-display font-extrabold text-lg text-slate-900 mt-1 tabular-nums">0%</div>
+                <span id="metricPrevMonthTotal" class="text-[11px] text-slate-400 block mt-0.5">Bulan lalu: Rp 0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ringkasan Arus Kas Bulan Ini -->
+          <div class="mt-5 pt-4 border-t border-slate-100 space-y-2 text-xs">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-500">Pemasukan Aktual Tercatat</span>
+              <span id="summaryActualIncome" class="font-bold text-emerald-700 tabular-nums">Rp 0</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-500">Total Pengeluaran (Needs + Wants)</span>
+              <span id="summaryTotalExpense" class="font-bold text-rose-600 tabular-nums">Rp 0</span>
+            </div>
+            <div class="flex justify-between items-center pt-1.5 border-t border-dashed border-slate-200">
+              <span class="font-semibold text-slate-700">Surplus / Defisit Arus Kas</span>
+              <span id="summaryNetSurplus" class="font-display font-extrabold text-sm text-slate-900 tabular-nums">Rp 0</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ROW 3: VISUALISASI GRAFIK (DONUT + TOP 5 KATEGORI) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Donut Chart: Proporsi Aktual 50/30/20 -->
+        <div class="lg:col-span-5 card-elevated rounded-2xl p-6">
+          <div class="mb-4">
+            <h3 class="font-display font-bold text-base text-slate-900">Proporsi Aktual Alokasi Dana</h3>
+            <p class="text-xs text-slate-500">Distribusi aktual Needs vs Wants vs Savings bulan terpilih</p>
+          </div>
+          <div class="relative h-64 flex items-center justify-center">
+            <canvas id="chartAllocationDonut"></canvas>
+          </div>
+        </div>
+
+        <!-- Horizontal Bar Chart: Top 5 Kategori Pengeluaran -->
+        <div class="lg:col-span-7 card-elevated rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-display font-bold text-base text-slate-900">Top 5 Kategori Pengeluaran Terbesar</h3>
+              <p class="text-xs text-slate-500">Identifikasi pos pengeluaran paling dominan untuk efisiensi</p>
+            </div>
+            <span id="topCategoryBadge" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600">
+              0 Kategori
+            </span>
+          </div>
+          <div class="relative h-64">
+            <canvas id="chartTopCategories"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ROW 4: TRANSACTION CALENDAR HEATMAP -->
+      <div class="card-elevated rounded-2xl p-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-5 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="font-display font-bold text-base sm:text-lg text-slate-900">Transaction Calendar Heatmap</h2>
+              <span id="heatmapMonthTitle" class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                2026-11
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Peta intensitas belanja harian (Senin–Minggu). Arahkan kursor / ketuk tanggal untuk melihat rincian transaksi hari tersebut.
+            </p>
+          </div>
+
+          <!-- Heatmap Legend -->
+          <div class="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/70 self-start md:self-auto">
+            <span>No-Spend</span>
+            <span class="w-4 h-4 rounded bg-emerald-50 border border-emerald-200 inline-block" title="Rp 0 (No-Spend Day)"></span>
+            <span class="w-4 h-4 rounded bg-amber-100 border border-amber-300 inline-block" title="Belanja Ringan"></span>
+            <span class="w-4 h-4 rounded bg-orange-200 border border-orange-400 inline-block" title="Belanja Sedang"></span>
+            <span class="w-4 h-4 rounded bg-rose-500 border border-rose-600 inline-block" title="Peak Spending"></span>
+            <span>Peak</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-5">
+          <!-- Calendar Grid (8 Cols) -->
+          <div class="lg:col-span-8">
+            <div class="grid grid-cols-7 gap-1.5 sm:gap-2 text-center mb-2">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 py-1">Sen</div>
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 py-1">Sel</div>
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 py-1">Rab</div>
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 py-1">Kam</div>
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 py-1">Jum</div>
+              <div class="text-[11px] font-bold uppercase tracking-wider text-rose-500 py-1">Sab</div>
+              <div class="text-[11px] font-bold uppercase tracking-wider text-rose-500 py-1">Min</div>
+            </div>
+            <div id="calendarHeatmapGrid" class="grid grid-cols-7 gap-1.5 sm:gap-2">
+              <!-- Diisi dinamis oleh JS -->
+            </div>
+          </div>
+
+          <!-- Calendar Pattern Insights (4 Cols) -->
+          <div class="lg:col-span-4 flex flex-col justify-between bg-slate-50/90 rounded-2xl p-5 border border-slate-200/80 space-y-4">
+            <div>
+              <h4 class="font-display font-bold text-sm text-slate-900">Analisis Perilaku Kalender</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Deteksi kebiasaan belanja harian &amp; akhir pekan</p>
+            </div>
+
+            <div class="space-y-3">
+              <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/70">
+                <div>
+                  <span class="text-xs font-semibold text-emerald-800 block">No-Spend Days (Rp 0)</span>
+                  <span class="text-[11px] text-slate-400">Hari tanpa transaksi keluar</span>
+                </div>
+                <span id="calNoSpendCount" class="font-display font-extrabold text-lg text-emerald-700 tabular-nums">0 hari</span>
+              </div>
+
+              <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/70">
+                <div>
+                  <span class="text-xs font-semibold text-slate-800 block">Hari Aktif Belanja</span>
+                  <span class="text-[11px] text-slate-400">Hari dengan pengeluaran &gt; 0</span>
+                </div>
+                <span id="calActiveSpendCount" class="font-display font-extrabold text-lg text-slate-900 tabular-nums">0 hari</span>
+              </div>
+
+              <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/70">
+                <div>
+                  <span class="text-xs font-semibold text-rose-700 block">Rekor Belanja 1 Hari</span>
+                  <span id="calPeakDateLabel" class="text-[11px] text-slate-400">-</span>
+                </div>
+                <span id="calPeakAmount" class="font-display font-extrabold text-sm text-rose-600 tabular-nums">Rp 0</span>
+              </div>
+            </div>
+
+            <!-- Weekend vs Weekday Bar -->
+            <div class="pt-3 border-t border-slate-200/80">
+              <div class="flex justify-between text-xs font-semibold mb-1.5">
+                <span class="text-slate-600">Weekday (Sen–Jum)</span>
+                <span class="text-rose-600">Weekend (Sab–Min)</span>
+              </div>
+              <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden flex">
+                <div id="barWeekdayPct" class="bg-slate-700 h-full transition-all duration-500" style="width: 50%"></div>
+                <div id="barWeekendPct" class="bg-rose-500 h-full transition-all duration-500" style="width: 50%"></div>
+              </div>
+              <div class="flex justify-between text-[11px] text-slate-500 mt-1.5 tabular-nums">
+                <span id="calWeekdayTotal">Rp 0 (0%)</span>
+                <span id="calWeekendTotal">Rp 0 (0%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW 5: TABEL MUTASI TRANSAKSI BULAN TERPILIH (READ-ONLY) -->
+      <div class="card-elevated rounded-2xl overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="font-display font-bold text-base sm:text-lg text-slate-900">Log Mutasi Transaksi Bulan Terpilih</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Tampilan read-only tersinkronisasi dari bot Telegram &amp; Google Sheets</p>
+          </div>
+
+          <!-- Filter Dompet & Pencarian Read-Only -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-semibold">
+              <button type="button" data-wallet="ALL" class="wallet-filter-btn px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition">Semua</button>
+              <button type="button" data-wallet="Cash" class="wallet-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Cash</button>
+              <button type="button" data-wallet="Bank" class="wallet-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Bank</button>
+            </div>
+            <div class="relative">
+              <input id="txSearchInput" type="text" placeholder="Cari kategori / catatan..." class="pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-emerald-500 w-44 sm:w-56 transition" />
+              <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                <th class="py-3.5 px-5">Tanggal</th>
+                <th class="py-3.5 px-4">Tipe</th>
+                <th class="py-3.5 px-4">Dompet</th>
+                <th class="py-3.5 px-4">Pos 50/30/20</th>
+                <th class="py-3.5 px-4">Kategori</th>
+                <th class="py-3.5 px-4 text-right">Nominal</th>
+                <th class="py-3.5 px-5">Catatan</th>
+              </tr>
+            </thead>
+            <tbody id="txTableBody" class="divide-y divide-slate-100 text-xs sm:text-sm">
+              <!-- Diisi dinamis oleh JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 2: MINGGUAN (WEEKLY TACTICAL)                                   -->
+    <!-- =================================================================== -->
+    <section id="view-weekly" class="hidden space-y-6">
+      
+      <!-- Header Kontrol Minggu -->
+      <div class="card-elevated rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="font-display font-bold text-base sm:text-lg text-slate-900">Kontrol Taktis Mingguan (Senin – Minggu)</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Jatah mingguan dihitung otomatis dari batas bulanan dibagi 4,33 pekan</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label for="weekSelector" class="text-xs font-semibold text-slate-500">Pilih Pekan:</label>
+          <select id="weekSelector" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs sm:text-sm font-semibold text-slate-900 focus:outline-none focus:border-emerald-500">
+            <!-- Diisi otomatis sesuai bulan terpilih -->
+          </select>
+        </div>
+      </div>
+
+      <!-- 4 Kartu Limit & Sisa Kuota Mingguan -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card-elevated rounded-2xl p-5">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Keluar Pekan Ini</span>
+          <div id="wkTotalOut" class="font-display font-extrabold text-2xl text-slate-900 mt-2 tabular-nums">Rp 0</div>
+          <div class="mt-2 text-xs text-slate-500 flex justify-between">
+            <span>Batas: <strong id="wkTotalLimit" class="tabular-nums">Rp 0</strong></span>
+            <span id="wkTotalStatus" class="font-bold text-emerald-700">Aman</span>
+          </div>
+        </div>
+
+        <div class="card-elevated rounded-2xl p-5">
+          <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Kuota Needs Mingguan</span>
+          <div id="wkNeedsReal" class="font-display font-extrabold text-2xl text-slate-900 mt-2 tabular-nums">Rp 0</div>
+          <div class="mt-2 text-xs text-slate-500 flex justify-between">
+            <span>Limit: <strong id="wkNeedsLimit" class="tabular-nums">Rp 0</strong></span>
+            <span>Sisa: <strong id="wkNeedsRem" class="text-emerald-700 tabular-nums">Rp 0</strong></span>
+          </div>
+        </div>
+
+        <div class="card-elevated rounded-2xl p-5">
+          <span class="text-xs font-semibold uppercase tracking-wider text-amber-600">Kuota Wants Mingguan</span>
+          <div id="wkWantsReal" class="font-display font-extrabold text-2xl text-slate-900 mt-2 tabular-nums">Rp 0</div>
+          <div class="mt-2 text-xs text-slate-500 flex justify-between">
+            <span>Limit: <strong id="wkWantsLimit" class="tabular-nums">Rp 0</strong></span>
+            <span>Sisa: <strong id="wkWantsRem" class="text-amber-700 tabular-nums">Rp 0</strong></span>
+          </div>
+        </div>
+
+        <div class="card-elevated rounded-2xl p-5 bg-slate-900 text-white">
+          <span class="text-xs font-semibold uppercase tracking-wider text-emerald-300">Disiplin No-Spend Pekan Ini</span>
+          <div id="wkNoSpendDays" class="font-display font-extrabold text-2xl text-white mt-2 tabular-nums">0 / 7 Hari</div>
+          <p class="text-xs text-slate-400 mt-2">Target ideal: minimal 2 hari tanpa belanja dalam sepekan.</p>
+        </div>
+      </div>
+
+      <!-- Stacked Bar Chart & Tabel Harian Senin-Minggu -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-7 card-elevated rounded-2xl p-6">
+          <h3 class="font-display font-bold text-base text-slate-900 mb-1">Komposisi Belanja Harian (Needs vs Wants)</h3>
+          <p class="text-xs text-slate-500 mb-4">Visualisasi intensitas pengeluaran dari Senin hingga Minggu</p>
+          <div class="relative h-72">
+            <canvas id="chartWeeklyStacked"></canvas>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 card-elevated rounded-2xl p-6">
+          <h3 class="font-display font-bold text-base text-slate-900 mb-1">Rincian Harian Pekan Terpilih</h3>
+          <p class="text-xs text-slate-500 mb-4">Status harian otomatis berdasarkan batas rata-rata harian</p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-400 uppercase text-[10px]">
+                  <th class="py-2">Hari / Tgl</th>
+                  <th class="py-2 text-right">Total Keluar</th>
+                  <th class="py-2 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody id="wkDailyTableBody" class="divide-y divide-slate-100">
+                <!-- Diisi dinamis JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 3: TAHUNAN & KEBEBASAN FINANSIAL (ANNUAL & WEALTH)              -->
+    <!-- =================================================================== -->
+    <section id="view-annual" class="hidden space-y-6">
+      
+      <!-- Executive Strategic KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card-elevated rounded-2xl p-5">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Akumulasi Tabungan 2026</span>
+          <div id="annNetWorthGrowth" class="font-display font-extrabold text-2xl text-emerald-700 mt-2 tabular-nums">Rp 0</div>
+          <span id="annAvgSavingRatio" class="text-xs text-slate-500 block mt-1.5">Rata-rata Saving Ratio: 0%</span>
+        </div>
+
+        <div class="card-elevated rounded-2xl p-5">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Financial Runway</span>
+          <div id="annRunwayMonths" class="font-display font-extrabold text-2xl text-slate-900 mt-2 tabular-nums">0.0 Bulan</div>
+          <span class="text-xs text-slate-500 block mt-1.5">Ketahanan hidup dari tabungan tahun ini</span>
+        </div>
+
+        <div class="card-elevated rounded-2xl p-5">
+          <span class="text-xs font-semibold uppercase tracking-wider text-rose-600">Peak Spending Month</span>
+          <div id="annPeakMonth" class="font-display font-extrabold text-xl text-slate-900 mt-2">-</div>
+          <span id="annPeakAmount" class="text-xs text-slate-500 block mt-1.5 tabular-nums">Rp 0</span>
+        </div>
+
+        <div class="card-elevated rounded-2xl p-5">
+          <span class="text-xs font-semibold uppercase tracking-wider text-sky-600">Lowest Spending Month</span>
+          <div id="annLowestMonth" class="font-display font-extrabold text-xl text-slate-900 mt-2">-</div>
+          <span id="annLowestAmount" class="text-xs text-slate-500 block mt-1.5 tabular-nums">Rp 0</span>
+        </div>
+      </div>
+
+      <!-- Combo Chart 12 Bulan -->
+      <div class="card-elevated rounded-2xl p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <h2 class="font-display font-bold text-base sm:text-lg text-slate-900">Tren Arus Kas &amp; Saving Ratio 12 Bulan (2026)</h2>
+            <p class="text-xs text-slate-500">Perbandingan Pemasukan, Total Pengeluaran, Tabungan, serta garis Saving Ratio (%)</p>
+          </div>
+        </div>
+        <div class="relative h-80">
+          <canvas id="chartAnnualCombo"></canvas>
+        </div>
+      </div>
+
+      <!-- Kalkulator & Tracker Dana Darurat Otomatis -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-7 card-elevated rounded-2xl p-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+            <div>
+              <h3 class="font-display font-bold text-base sm:text-lg text-slate-900">Tracker &amp; Simulasi Dana Darurat Ideal</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Dihitung otomatis dari rata-rata pengeluaran wajib (*Needs*) bulanan Anda</p>
+            </div>
+            <select id="efMultiplierSelect" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500">
+              <option value="6">Lajang / Tanpa Tanggungan (6x Needs)</option>
+              <option value="9">Menikah Belum Punya Anak (9x Needs)</option>
+              <option value="12">Menikah Dengan Anak (12x Needs)</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
+              <span class="text-[11px] font-semibold uppercase text-slate-500">Rata-rata Needs / Bln</span>
+              <div id="efMonthlyNeeds" class="font-display font-extrabold text-lg text-slate-900 mt-1 tabular-nums">Rp 0</div>
+            </div>
+            <div class="p-4 rounded-xl bg-amber-50/70 border border-amber-200/80">
+              <span class="text-[11px] font-semibold uppercase text-amber-800">Target Dana Darurat</span>
+              <div id="efTargetIdeal" class="font-display font-extrabold text-lg text-amber-950 mt-1 tabular-nums">Rp 0</div>
+            </div>
+            <div class="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
+              <span class="text-[11px] font-semibold uppercase text-emerald-800">Terkumpul (Likuid + Save)</span>
+              <div id="efCurrentFund" class="font-display font-extrabold text-lg text-emerald-950 mt-1 tabular-nums">Rp 0</div>
+            </div>
+          </div>
+
+          <div class="mt-5">
+            <div class="flex justify-between text-xs font-bold mb-1.5">
+              <span class="text-slate-700">Progres Ketercapaian Dana Darurat</span>
+              <span id="efPctText" class="text-emerald-700 tabular-nums">0%</span>
+            </div>
+            <div class="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
+              <div id="efProgressBar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p id="efAdviceText" class="text-xs text-slate-500 mt-2.5 leading-relaxed">
+              Dana darurat adalah fondasi utama sebelum mengalokasikan dana ke instrumen investasi berisiko tinggi.
+            </p>
+          </div>
+        </div>
+
+        <!-- Ringkasan Matriks 12 Bulan -->
+        <div class="lg:col-span-5 card-elevated rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <h3 class="font-display font-bold text-base text-slate-900 mb-1">Ringkasan Kinerja Setahun Penuh</h3>
+            <p class="text-xs text-slate-500 mb-4">Agregasi seluruh transaksi tahun 2026</p>
+            <div class="space-y-3 text-xs">
+              <div class="flex justify-between py-2 border-b border-slate-100">
+                <span class="text-slate-500">Total Pemasukan Tercatat</span>
+                <span id="annTotalIncome" class="font-bold text-slate-900 tabular-nums">Rp 0</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-slate-100">
+                <span class="text-slate-500">Total Kebutuhan Pokok (Needs)</span>
+                <span id="annTotalNeeds" class="font-bold text-slate-900 tabular-nums">Rp 0</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-slate-100">
+                <span class="text-slate-500">Total Gaya Hidup (Wants)</span>
+                <span id="annTotalWants" class="font-bold text-rose-600 tabular-nums">Rp 0</span>
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="text-slate-500">Total Tabungan &amp; Investasi</span>
+                <span id="annTotalSavings" class="font-bold text-emerald-700 tabular-nums">Rp 0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 p-3.5 rounded-xl bg-slate-900 text-slate-200 text-xs leading-relaxed">
+            <strong class="text-emerald-300 block mb-1">Prinsip Kebebasan Finansial:</strong>
+            Jaga agar kenaikan pendapatan tidak diikuti oleh kenaikan pos <em>Wants</em> (<em>lifestyle creep</em>), sehingga selisih surplus otomatis mempercepat pertumbuhan <em>Net Worth</em> Anda.
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- FLOATING TOOLTIP UNTUK CALENDAR HEATMAP                               -->
+  <!-- ===================================================================== -->
+  <div id="heatmapTooltip" class="fixed z-50 pointer-events-none hidden bg-slate-900/95 backdrop-blur-md text-white rounded-xl p-3.5 shadow-2xl border border-slate-700 max-w-xs text-xs">
+    <div class="flex items-center justify-between gap-4 border-b border-slate-700 pb-1.5 mb-2">
+      <span id="ttDate" class="font-bold text-emerald-300">2026-11-22</span>
+      <span id="ttTotal" class="font-extrabold tabular-nums">Rp 0</span>
+    </div>
+    <div id="ttList" class="space-y-1 text-[11px] text-slate-300 max-h-40 overflow-y-auto">
+      <!-- Detail transaksi harian -->
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL PANDUAN KONEKSI LIVE GOOGLE SHEETS                              -->
+  <!-- ===================================================================== -->
+  <div id="connectionModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+            </svg>
+          </span>
+          <h3 class="font-display font-bold text-base text-slate-900">Koneksi Live Google Sheets</h3>
+        </div>
+        <button type="button" onclick="closeConnectionModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="text-xs text-slate-600 space-y-3 leading-relaxed">
+        <p>
+          Dashboard ini menarik data langsung dari Google Sheets secara <strong>Read-Only</strong> melalui endpoint Google Visualization API tanpa memerlukan server tambahan.
+        </p>
+        
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+          <div class="font-bold text-slate-900">Cara Mengaktifkan Sinkronisasi Live (1 Kali Saja):</div>
+          <ol class="list-decimal list-inside space-y-1.5 text-slate-700">
+            <li>Buka Google Sheet <strong>Personal Finance Command Center</strong> Anda.</li>
+            <li>Klik tombol hijau <strong>Share (Bagikan)</strong> di pojok kanan atas.</li>
+            <li>Pada bagian <em>General access</em>, ubah dari <em>Restricted</em> menjadi <strong>Anyone with the link (Siapa saja yang memiliki link)</strong> dengan peran <strong>Viewer (Pelihat)</strong>.</li>
+            <li>Klik <strong>Done</strong>, lalu tekan tombol <strong>Simpan &amp; Hubungkan</strong> di bawah ini.</li>
+          </ol>
+        </div>
+
+        <div>
+          <label for="sheetIdInput" class="block font-semibold text-slate-700 mb-1">Google Sheet ID:</label>
+          <input id="sheetIdInput" type="text" value="1cOo5ZtUM-W_VX30OMcw8Nd7IKhJJBlpRbUsKO8UKDWg" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono text-slate-800 focus:outline-none focus:border-emerald-500" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeConnectionModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">
+          Tutup
+        </button>
+        <button type="button" onclick="saveAndReconnectSheet()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-sm">
+          Simpan &amp; Hubungkan Live
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- FOOTER                                                                -->
+  <!-- ===================================================================== -->
+  <footer class="border-t border-slate-200/80 bg-white mt-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+      <span>Personal Finance Command Center &bull; Read-Only Executive Analytics</span>
+      <span id="lastSyncFooter">Terakhir diperbarui: -</span>
+    </div>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- JAVASCRIPT ENGINE (GOOGLE SHEETS GVIZ PARSER & FINANCIAL ANALYTICS)   -->
+  <!-- ===================================================================== -->
+  <script>
+    // =========================================================================
+    // 1. KONFIGURASI & FALLBACK SNAPSHOT DATA (SESUAI SHEET USER SAAT INI)
+    // =========================================================================
+    const DEFAULT_SHEET_ID = "1cOo5ZtUM-W_VX30OMcw8Nd7IKhJJBlpRbUsKO8UKDWg";
+    let activeSheetId = localStorage.getItem("pf_sheet_id") || DEFAULT_SHEET_ID;
+
+    // Fallback snapshot jika Google Sheet masih di-set Restricted/Private
+    const FALLBACK_DATA = {
+      settings: {
+        monthlyIncomeTarget: 3000000,
+        needsPct: 0.50,
+        wantsPct: 0.30,
+        savingsPct: 0.20,
+        initialCash: 0,
+        initialBank: 0
+      },
+      transactions: [
+        {
+          timestamp: "2026-11-22 14:15:00",
+          tanggal: "2026-11-22",
+          tipe: "Pengeluaran",
+          pos: "Needs",
+          kategori: "Makan",
+          nominal: 25000,
+          catatan: "Nasi padang",
+          dompet: "Bank"
+        }
+      ]
+    };
+
+    let appState = {
+      isLive: false,
+      selectedMonth: "2026-11",
+      selectedWeekIndex: 0,
+      walletFilter: "ALL",
+      searchQuery: "",
+      efMultiplier: 6,
+      settings: { ...FALLBACK_DATA.settings },
+      transactions: [...FALLBACK_DATA.transactions]
+    };
+
+    // Chart.js Instances
+    let chartInstances = {
+      donut: null,
+      topCat: null,
+      weekly: null,
+      annual: null
+    };
+
+    // =========================================================================
+    // 2. UTILITY FORMATTERS
+    // =========================================================================
+    function formatRp(amount) {
+      const num = Number(amount) || 0;
+      const prefix = num < 0 ? "-Rp " : "Rp ";
+      return prefix + Math.abs(Math.round(num)).toLocaleString("id-ID");
+    }
+
+    function formatShortRp(amount) {
+      const num = Math.abs(Number(amount) || 0);
+      if (num >= 1000000) return (amount < 0 ? "-" : "") + (num / 1000000).toFixed(1).replace(/\.0$/, "") + "jt";
+      if (num >= 1000) return (amount < 0 ? "-" : "") + Math.round(num / 1000) + "rb";
+      return formatRp(amount);
+    }
+
+    function parseNumberSafe(val) {
+      if (typeof val === "number") return isNaN(val) ? 0 : val;
+      if (!val) return 0;
+      const cleaned = String(val).replace(/[^0-9.-]+/g, "");
+      const parsed = parseFloat(cleaned);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    function normalizeDateString(rawVal, formattedVal) {
+      // Handle Google Visualization Date(yyyy, m, d) format
+      if (typeof rawVal === "string" && rawVal.startsWith("Date(")) {
+        const nums = rawVal.replace("Date(", "").replace(")", "").split(",").map(Number);
+        if (nums.length >= 3) {
+          const y = nums[0];
+          const m = String(nums[1] + 1).padStart(2, "0");
+          const d = String(nums[2]).padStart(2, "0");
+          return `${y}-${m}-${d}`;
+        }
+      }
+      const str = String(formattedVal || rawVal || "").trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
+      return str;
+    }
+
+    // =========================================================================
+    // 3. GOOGLE SHEETS GVIZ LIVE CONNECTOR
+    // =========================================================================
+    function fetchGvizSheet(sheetId, sheetName) {
+      return new Promise((resolve, reject) => {
+        const callbackName = "gvizCb_" + sheetName.replace(/[^a-zA-Z0-9]/g, "") + "_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:${callbackName}&sheet=${encodeURIComponent(sheetName)}`;
+        
+        const script = document.createElement("script");
+        let isSettled = false;
+
+        const cleanup = () => {
+          delete window[callbackName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        };
+
+        const timer = setTimeout(() => {
+          if (!isSettled) {
+            isSettled = true;
+            cleanup();
+            reject(new Error("Timeout menghubungkan ke Google Sheets"));
+          }
+        }, 7000);
+
+        window[callbackName] = function(response) {
+          if (isSettled) return;
+          isSettled = true;
+          clearTimeout(timer);
+          cleanup();
+          if (!response || response.status === "error") {
+            reject(new Error("Sheet tidak dapat diakses publik"));
+          } else {
+            resolve(response.table);
+          }
+        };
+
+        script.onerror = function() {
+          if (isSettled) return;
+          isSettled = true;
+          clearTimeout(timer);
+          cleanup();
+          reject(new Error("Gagal memuat skrip Google Sheets"));
+        };
+
+        script.src = url;
+        document.body.appendChild(script);
+      });
+    }
+
+    async function loadDashboardData() {
+      const refreshIcon = document.getElementById("refreshIcon");
+      refreshIcon.classList.add("animate-spin");
+
+      try {
+        const [txTable, budgetTable] = await Promise.all([
+          fetchGvizSheet(activeSheetId, "Transaksi"),
+          fetchGvizSheet(activeSheetId, "Budget_Setting")
+        ]);
+
+        // Parse Budget_Setting
+        const parsedSettings = { ...FALLBACK_DATA.settings };
+        if (budgetTable && budgetTable.rows) {
+          budgetTable.rows.forEach((row) => {
+            const c0 = row.c && row.c[0] ? String(row.c[0].v || "").toLowerCase() : "";
+            const c1Val = row.c && row.c[1] ? parseNumberSafe(row.c[1].v) : 0;
+            if (c0.includes("target pemasukan")) parsedSettings.monthlyIncomeTarget = c1Val || 3000000;
+            if (c0.includes("saldo awal cash")) parsedSettings.initialCash = c1Val;
+            if (c0.includes("saldo awal bank")) parsedSettings.initialBank = c1Val;
+          });
+        }
+
+        // Parse Transaksi
+        const parsedTx = [];
+        if (txTable && txTable.rows) {
+          txTable.rows.forEach((row) => {
+            const c = row.c || [];
+            const rawDate = c[1] ? c[1].v : "";
+            const fmtDate = c[1] ? c[1].f : "";
+            const tanggal = normalizeDateString(rawDate, fmtDate);
+            const tipe = c[2] ? String(c[2].v || "").trim() : "";
+            if (!tanggal || !tipe || tipe.toLowerCase() === "tipe") return;
+
+            const pos = c[3] ? String(c[3].v || "").trim() : "Wants";
+            const kategori = c[4] ? String(c[4].v || "Lainnya").trim() : "Lainnya";
+            const nominal = c[5] ? parseNumberSafe(c[5].v) : 0;
+            const catatan = c[6] && c[6].v !== null ? String(c[6].v).trim() : "-";
+            const dompet = c[7] && c[7].v !== null ? String(c[7].v).trim() : "Bank";
+
+            parsedTx.push({
+              timestamp: c[0] ? String(c[0].f || c[0].v || "") : tanggal,
+              tanggal,
+              tipe,
+              pos,
+              kategori,
+              nominal,
+              catatan,
+              dompet
+            });
+          });
+        }
+
+        appState.settings = parsedSettings;
+        appState.transactions = parsedTx;
+        appState.isLive = true;
+        updateConnectionUI(true);
+
+      } catch (err) {
+        // Fallback ke snapshot data jika sheet masih Private
+        appState.settings = { ...FALLBACK_DATA.settings };
+        appState.transactions = [...FALLBACK_DATA.transactions];
+        appState.isLive = false;
+        updateConnectionUI(false);
+      } finally {
+        refreshIcon.classList.remove("animate-spin");
+        const nowStr = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        document.getElementById("lastSyncFooter").textContent = `Terakhir diperbarui: ${nowStr} WIB`;
+        renderAllViews();
+      }
+    }
+
+    function updateConnectionUI(isLive) {
+      const dot = document.getElementById("statusDot");
+      const label = document.getElementById("statusLabel");
+      const banner = document.getElementById("previewBanner");
+
+      if (isLive) {
+        dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0";
+        label.textContent = "Live Connected • Google Sheets";
+        label.className = "text-emerald-300 font-semibold";
+        banner.classList.add("hidden");
+      } else {
+        dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0";
+        label.textContent = "Preview Mode • Klik untuk Live Sync";
+        label.className = "text-amber-200 font-semibold";
+        banner.classList.remove("hidden");
+      }
+    }
+
+    // =========================================================================
+    // 4. PERHITUNGAN SALDO REAL-TIME DOMPET (CASH & BANK)
+    // =========================================================================
+    function computeWalletBalances() {
+      let cash = appState.settings.initialCash || 0;
+      let bank = appState.settings.initialBank || 0;
+
+      appState.transactions.forEach((tx) => {
+        const tipe = tx.tipe.toLowerCase();
+        const dompet = (tx.dompet || "Bank").toLowerCase();
+        const nom = tx.nominal || 0;
+
+        if (tipe === "pemasukan") {
+          if (dompet === "cash") cash += nom;
+          else bank += nom;
+        } else if (tipe === "pengeluaran" || tipe === "tabungan") {
+          if (dompet === "cash") cash -= nom;
+          else bank -= nom;
+        } else if (tipe === "transfer") {
+          if (dompet.includes("bank ke cash")) {
+            bank -= nom;
+            cash += nom;
+          } else if (dompet.includes("cash ke bank")) {
+            cash -= nom;
+            bank += nom;
+          }
+        }
+      });
+
+      return { cash, bank, total: cash + bank };
+    }
+
+    // =========================================================================
+    // 5. RENDER TAB 1: OVERVIEW & BULANAN
+    // =========================================================================
+    function renderMonthlyView() {
+      const month = appState.selectedMonth;
+      const monthTx = appState.transactions.filter((t) => t.tanggal.startsWith(month));
+
+      // Prev month calculation
+      const [yStr, mStr] = month.split("-");
+      const y = Number(yStr);
+      const m = Number(mStr);
+      const prevDate = new Date(y, m - 2, 1);
+      const prevMonthStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}`;
+      const prevMonthTx = appState.transactions.filter((t) => t.tanggal.startsWith(prevMonthStr));
+
+      // Aggregate monthly totals
+      let actualIncome = 0;
+      let needsReal = 0;
+      let wantsReal = 0;
+      let savingsReal = 0;
+
+      monthTx.forEach((tx) => {
+        const tipe = tx.tipe.toLowerCase();
+        const pos = tx.pos.toLowerCase();
+        if (tipe === "pemasukan") actualIncome += tx.nominal;
+        else if (pos === "needs") needsReal += tx.nominal;
+        else if (pos === "wants") wantsReal += tx.nominal;
+        else if (pos === "savings" || tipe === "tabungan") savingsReal += tx.nominal;
+      });
+
+      const prevExpense = prevMonthTx
+        .filter((t) => t.pos.toLowerCase() === "needs" || t.pos.toLowerCase() === "wants")
+        .reduce((acc, t) => acc + t.nominal, 0);
+
+      const basisIncome = actualIncome > 0 ? actualIncome : (appState.settings.monthlyIncomeTarget || 3000000);
+      const needsLimit = basisIncome * 0.50;
+      const wantsLimit = basisIncome * 0.30;
+      const savingsTarget = basisIncome * 0.20;
+      const totalExpense = needsReal + wantsReal;
+      const netSurplus = actualIncome - (totalExpense + savingsReal);
+
+      // Wallet Balances
+      const wallets = computeWalletBalances();
+      const cashShare = wallets.total > 0 ? Math.round((wallets.cash / wallets.total) * 100) : 0;
+      const bankShare = wallets.total > 0 ? 100 - cashShare : 0;
+
+      document.getElementById("kpiSaldoCash").textContent = formatRp(wallets.cash);
+      document.getElementById("kpiInitCash").textContent = formatRp(appState.settings.initialCash);
+      document.getElementById("kpiCashShare").textContent = `${cashShare}%`;
+
+      document.getElementById("kpiSaldoBank").textContent = formatRp(wallets.bank);
+      document.getElementById("kpiInitBank").textContent = formatRp(appState.settings.initialBank);
+      document.getElementById("kpiBankShare").textContent = `${bankShare}%`;
+
+      document.getElementById("kpiTotalLikuid").textContent = formatRp(wallets.total);
+      document.getElementById("barCashRatio").style.width = `${Math.max(0, Math.min(100, cashShare))}%`;
+      document.getElementById("barBankRatio").style.width = `${Math.max(0, Math.min(100, bankShare))}%`;
+      document.getElementById("kpiNetCashflowMonth").textContent = `Arus Kas Bln Ini: ${formatRp(actualIncome - totalExpense)}`;
+
+      // Ratios & Health Score (0-100)
+      const needsRatio = basisIncome > 0 ? (needsReal / basisIncome) : 0;
+      const wantsRatio = basisIncome > 0 ? (wantsReal / basisIncome) : 0;
+      const savingsRatio = basisIncome > 0 ? (savingsReal / basisIncome) : 0;
+
+      let score = 100;
+      if (needsRatio > 0.50) score -= Math.min(35, Math.round((needsRatio - 0.50) * 150));
+      if (wantsRatio > 0.30) score -= Math.min(35, Math.round((wantsRatio - 0.30) * 150));
+      if (actualIncome > 0 && savingsRatio < 0.20) score -= Math.min(30, Math.round((0.20 - savingsRatio) * 120));
+      score = Math.max(0, Math.min(100, score));
+
+      document.getElementById("kpiHealthScore").textContent = score;
+      const healthBadge = document.getElementById("kpiHealthBadge");
+      if (score >= 80) {
+        healthBadge.textContent = "Sangat Sehat";
+        healthBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200";
+      } else if (score >= 60) {
+        healthBadge.textContent = "Cukup Sehat";
+        healthBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200";
+      } else {
+        healthBadge.textContent = "Perlu Koreksi";
+        healthBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200";
+      }
+
+      // 50/30/20 Progress Bars
+      document.getElementById("basisIncomeDisplay").textContent = formatRp(basisIncome);
+
+      // Needs
+      const needsPct = (needsRatio * 100).toFixed(1);
+      document.getElementById("needsActualText").textContent = formatRp(needsReal);
+      document.getElementById("needsLimitText").textContent = formatRp(needsLimit);
+      document.getElementById("needsPctBadge").textContent = `${needsPct}%`;
+      document.getElementById("needsProgressBar").style.width = `${Math.min(100, (needsReal / (needsLimit || 1)) * 100)}%`;
+      document.getElementById("needsProgressBar").className = `h-full rounded-full transition-all duration-500 ${needsRatio <= 0.50 ? "bg-emerald-600" : "bg-rose-600"}`;
+      document.getElementById("needsStatusText").textContent = needsRatio <= 0.50 ? "Status: Sehat (≤50%)" : "Status: Overbudget (>50%)";
+      document.getElementById("needsRemainingText").textContent = formatRp(needsLimit - needsReal);
+
+      // Wants
+      const wantsPct = (wantsRatio * 100).toFixed(1);
+      document.getElementById("wantsActualText").textContent = formatRp(wantsReal);
+      document.getElementById("wantsLimitText").textContent = formatRp(wantsLimit);
+      document.getElementById("wantsPctBadge").textContent = `${wantsPct}%`;
+      document.getElementById("wantsProgressBar").style.width = `${Math.min(100, (wantsReal / (wantsLimit || 1)) * 100)}%`;
+      document.getElementById("wantsProgressBar").className = `h-full rounded-full transition-all duration-500 ${wantsRatio <= 0.30 ? "bg-amber-500" : "bg-rose-600"}`;
+      document.getElementById("wantsStatusText").textContent = wantsRatio <= 0.30 ? "Status: Terkendali (≤30%)" : "Status: Bocor (>30%)";
+      document.getElementById("wantsRemainingText").textContent = formatRp(wantsLimit - wantsReal);
+
+      // Savings
+      const savingsPct = (savingsRatio * 100).toFixed(1);
+      document.getElementById("savingsActualText").textContent = formatRp(savingsReal);
+      document.getElementById("savingsTargetText").textContent = formatRp(savingsTarget);
+      document.getElementById("savingsPctBadge").textContent = `${savingsPct}%`;
+      document.getElementById("savingsProgressBar").style.width = `${Math.min(100, (savingsReal / (savingsTarget || 1)) * 100)}%`;
+      document.getElementById("savingsStatusText").textContent = savingsRatio >= 0.20 ? "Status: Target Tercapai (≥20%)" : "Status: Belum Mencapai 20%";
+      document.getElementById("savingsDiffText").textContent = formatRp(savingsReal - savingsTarget);
+
+      // Advisor Message
+      const advisorMsg = document.getElementById("fpAdvisorMessage");
+      if (totalExpense === 0 && savingsReal === 0) {
+        advisorMsg.textContent = `Belum ada transaksi tercatat pada periode ${month}. Gunakan bot Telegram untuk mulai mencatat pemasukan, pengeluaran, atau mutasi tarik tunai.`;
+      } else if (wantsRatio > 0.30) {
+        advisorMsg.textContent = `Pos Gaya Hidup (Wants) sudah mencapai ${wantsPct}% melewati batas sehat 30%. Rem pengeluaran non-esensial dan alihkan sisa kuota ke tabungan.`;
+      } else if (needsRatio > 0.50) {
+        advisorMsg.textContent = `Kebutuhan Pokok (Needs) menyerap ${needsPct}% dari basis pemasukan. Evaluasi pos makan & transportasi harian agar tetap di bawah 50%.`;
+      } else {
+        advisorMsg.textContent = `Struktur arus kas bulan ${month} sangat terkendali. Pertahankan disiplin kuota harian dan pastikan minimal 20% dialokasikan ke Savings.`;
+      }
+
+      // Burn Rate & Safe-to-Spend Metrics
+      const daysInMonth = new Date(y, m, 0).getDate();
+      const today = new Date();
+      const isCurrentMonth = today.getFullYear() === y && (today.getMonth() + 1) === m;
+      const elapsedDays = isCurrentMonth ? Math.max(1, today.getDate()) : daysInMonth;
+      const remainingDays = isCurrentMonth ? Math.max(1, daysInMonth - today.getDate() + 1) : daysInMonth;
+
+      const dailyBurnRate = totalExpense / elapsedDays;
+      const projectedSpend = dailyBurnRate * daysInMonth;
+      const maxMonthlySpend = needsLimit + wantsLimit; // 80% of basis income
+      const remainingBudget = Math.max(0, maxMonthlySpend - totalExpense);
+      const safeToSpend = remainingBudget / remainingDays;
+
+      document.getElementById("metricBurnRate").textContent = formatRp(dailyBurnRate);
+      document.getElementById("metricSafeToSpend").textContent = formatRp(safeToSpend);
+      document.getElementById("metricDaysLeftNote").textContent = isCurrentMonth ? `Untuk ${remainingDays} hari tersisa` : `Rata-rata kuota ${daysInMonth} hari`;
+      document.getElementById("metricProjectedSpend").textContent = formatRp(projectedSpend);
+      document.getElementById("metricProjectionNote").textContent = projectedSpend <= maxMonthlySpend ? "Di bawah plafon 80% belanja" : "Berpotensi melebihi plafon!";
+
+      if (prevExpense > 0) {
+        const momPct = ((totalExpense - prevExpense) / prevExpense) * 100;
+        const sign = momPct > 0 ? "+" : "";
+        document.getElementById("metricMoMGrowth").textContent = `${sign}${momPct.toFixed(1)}%`;
+        document.getElementById("metricMoMGrowth").className = `font-display font-extrabold text-lg mt-1 tabular-nums ${momPct <= 0 ? "text-emerald-700" : "text-rose-600"}`;
+      } else {
+        document.getElementById("metricMoMGrowth").textContent = "N/A";
+        document.getElementById("metricMoMGrowth").className = "font-display font-extrabold text-lg text-slate-400 mt-1 tabular-nums";
+      }
+      document.getElementById("metricPrevMonthTotal").textContent = `Bulan lalu: ${formatRp(prevExpense)}`;
+
+      document.getElementById("summaryActualIncome").textContent = formatRp(actualIncome);
+      document.getElementById("summaryTotalExpense").textContent = formatRp(totalExpense);
+      document.getElementById("summaryNetSurplus").textContent = formatRp(netSurplus);
+      document.getElementById("summaryNetSurplus").className = `font-display font-extrabold text-sm tabular-nums ${netSurplus >= 0 ? "text-emerald-700" : "text-rose-600"}`;
+
+      // Render Charts, Heatmap, and Table
+      renderMonthlyCharts(needsReal, wantsReal, savingsReal, monthTx);
+      renderCalendarHeatmap(y, m, monthTx);
+      renderTransactionTable(monthTx);
+    }
+
+    function renderMonthlyCharts(needsReal, wantsReal, savingsReal, monthTx) {
+      // 1. Donut Chart
+      const ctxDonut = document.getElementById("chartAllocationDonut").getContext("2d");
+      if (chartInstances.donut) chartInstances.donut.destroy();
+
+      const hasData = (needsReal + wantsReal + savingsReal) > 0;
+      chartInstances.donut = new Chart(ctxDonut, {
+        type: "doughnut",
+        data: {
+          labels: hasData ? ["Needs (Kebutuhan)", "Wants (Gaya Hidup)", "Savings (Tabungan)"] : ["Belum Ada Transaksi"],
+          datasets: [{
+            data: hasData ? [needsReal, wantsReal, savingsReal] : [1],
+            backgroundColor: hasData ? ["#059669", "#f59e0b", "#0284c7"] : ["#e2e8f0"],
+            borderWidth: 2,
+            borderColor: "#ffffff",
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "68%",
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { usePointStyle: true, padding: 16, font: { family: "Inter", size: 12, weight: "600" } }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  if (!hasData) return " Belum ada data";
+                  return ` ${ctx.label}: ${formatRp(ctx.raw)}`;
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // 2. Top 5 Categories Horizontal Bar Chart
+      const catMap = {};
+      monthTx.forEach((tx) => {
+        if (tx.tipe.toLowerCase() === "pengeluaran") {
+          catMap[tx.kategori] = (catMap[tx.kategori] || 0) + tx.nominal;
+        }
+      });
+
+      const sortedCats = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
+      const top5 = sortedCats.slice(0, 5);
+      document.getElementById("topCategoryBadge").textContent = `${sortedCats.length} Kategori`;
+
+      const ctxTop = document.getElementById("chartTopCategories").getContext("2d");
+      if (chartInstances.topCat) chartInstances.topCat.destroy();
+
+      chartInstances.topCat = new Chart(ctxTop, {
+        type: "bar",
+        data: {
+          labels: top5.length > 0 ? top5.map((x) => x[0]) : ["Belum ada pengeluaran"],
+          datasets: [{
+            label: "Total Pengeluaran",
+            data: top5.length > 0 ? top5.map((x) => x[1]) : [0],
+            backgroundColor: ["#0b2b22", "#16654e", "#059669", "#10b981", "#34d399"],
+            borderRadius: 8,
+            barThickness: 24
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ` ${formatRp(ctx.raw)}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: "#f1f5f9" },
+              ticks: {
+                font: { family: "Inter", size: 11 },
+                callback: (val) => formatShortRp(val)
+              }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { font: { family: "Inter", size: 12, weight: "600" }, color: "#1e293b" }
+            }
+          }
+        }
+      });
+    }
+
+    // =========================================================================
+    // 6. TRANSACTION CALENDAR HEATMAP ENGINE
+    // =========================================================================
+    function renderCalendarHeatmap(year, month, monthTx) {
+      document.getElementById("heatmapMonthTitle").textContent = `${year}-${String(month).padStart(2, "0")}`;
+      const grid = document.getElementById("calendarHeatmapGrid");
+      grid.innerHTML = "";
+
+      const daysInMonth = new Date(year, month, 0).getDate();
+      // Monday = 0, Sunday = 6
+      const firstDayJs = new Date(year, month - 1, 1).getDay();
+      const startOffset = (firstDayJs + 6) % 7;
+
+      // Group expenses by day
+      const dailyMap = {};
+      for (let d = 1; d <= daysInMonth; d++) {
+        dailyMap[d] = { totalExpense: 0, items: [] };
+      }
+
+      let maxDailySpend = 0;
+      let peakDay = null;
+      let weekdayTotal = 0;
+      let weekendTotal = 0;
+
+      monthTx.forEach((tx) => {
+        const dayNum = Number(tx.tanggal.split("-")[2]);
+        if (!dailyMap[dayNum]) return;
+        dailyMap[dayNum].items.push(tx);
+
+        if (tx.tipe.toLowerCase() === "pengeluaran") {
+          dailyMap[dayNum].totalExpense += tx.nominal;
+          const jsDay = new Date(year, month - 1, dayNum).getDay();
+          if (jsDay === 0 || jsDay === 6) weekendTotal += tx.nominal;
+          else weekdayTotal += tx.nominal;
+        }
+      });
+
+      let noSpendCount = 0;
+      let activeSpendCount = 0;
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const spent = dailyMap[d].totalExpense;
+        if (spent === 0) noSpendCount++;
+        else activeSpendCount++;
+
+        if (spent > maxDailySpend) {
+          maxDailySpend = spent;
+          peakDay = d;
+        }
+      }
+
+      // Update pattern insights
+      document.getElementById("calNoSpendCount").textContent = `${noSpendCount} hari`;
+      document.getElementById("calActiveSpendCount").textContent = `${activeSpendCount} hari`;
+      document.getElementById("calPeakAmount").textContent = formatRp(maxDailySpend);
+      document.getElementById("calPeakDateLabel").textContent = peakDay ? `Tanggal ${peakDay} (${year}-${String(month).padStart(2, "0")}-${String(peakDay).padStart(2, "0")})` : "Belum ada belanja";
+
+      const combinedWw = weekdayTotal + weekendTotal;
+      const wdPct = combinedWw > 0 ? Math.round((weekdayTotal / combinedWw) * 100) : 50;
+      const wePct = combinedWw > 0 ? 100 - wdPct : 50;
+
+      document.getElementById("barWeekdayPct").style.width = `${wdPct}%`;
+      document.getElementById("barWeekendPct").style.width = `${wePct}%`;
+      document.getElementById("calWeekdayTotal").textContent = `${formatShortRp(weekdayTotal)} (${wdPct}%)`;
+      document.getElementById("calWeekendTotal").textContent = `${formatShortRp(weekendTotal)} (${wePct}%)`;
+
+      // Empty leading cells
+      for (let i = 0; i < startOffset; i++) {
+        const emptyCell = document.createElement("div");
+        emptyCell.className = "h-14 sm:h-16 rounded-xl bg-slate-50/50 border border-transparent";
+        grid.appendChild(emptyCell);
+      }
+
+      // Day cells
+      for (let d = 1; d <= daysInMonth; d++) {
+        const info = dailyMap[d];
+        const spent = info.totalExpense;
+        const ratio = maxDailySpend > 0 ? spent / maxDailySpend : 0;
+
+        let colorClass = "bg-emerald-50/70 border-emerald-200/80 text-emerald-950";
+        let amountClass = "text-emerald-700";
+        if (spent > 0 && ratio <= 0.33) {
+          colorClass = "bg-amber-100/90 border-amber-300 text-amber-950";
+          amountClass = "text-amber-900 font-bold";
+        } else if (ratio > 0.33 && ratio <= 0.70) {
+          colorClass = "bg-orange-200 border-orange-400 text-orange-950";
+          amountClass = "text-orange-950 font-bold";
+        } else if (ratio > 0.70) {
+          colorClass = "bg-rose-500 border-rose-600 text-white shadow-sm";
+          amountClass = "text-white font-extrabold";
+        }
+
+        const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        const cell = document.createElement("div");
+        cell.className = `heatmap-cell h-14 sm:h-16 rounded-xl border p-1.5 sm:p-2 flex flex-col justify-between cursor-pointer select-none ${colorClass}`;
+        cell.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] sm:text-xs font-bold">${d}</span>
+            ${info.items.length > 0 ? `<span class="w-1.5 h-1.5 rounded-full ${ratio > 0.70 ? "bg-white" : "bg-slate-600"}"></span>` : ""}
+          </div>
+          <div class="text-[10px] sm:text-[11px] truncate tabular-nums ${amountClass}">
+            ${spent > 0 ? formatShortRp(spent) : "Rp 0"}
+          </div>
+        `;
+
+        // Tooltip events
+        cell.addEventListener("mouseenter", (e) => showHeatmapTooltip(e, dateStr, info));
+        cell.addEventListener("mousemove", (e) => moveHeatmapTooltip(e));
+        cell.addEventListener("mouseleave", hideHeatmapTooltip);
+        cell.addEventListener("click", (e) => showHeatmapTooltip(e, dateStr, info));
+
+        grid.appendChild(cell);
+      }
+    }
+
+    function showHeatmapTooltip(e, dateStr, info) {
+      const tt = document.getElementById("heatmapTooltip");
+      document.getElementById("ttDate").textContent = dateStr;
+      document.getElementById("ttTotal").textContent = formatRp(info.totalExpense);
+
+      const list = document.getElementById("ttList");
+      if (info.items.length === 0) {
+        list.innerHTML = `<div class="text-emerald-300 font-medium">🟢 No-Spend Day (Tidak ada transaksi)</div>`;
+      } else {
+        list.innerHTML = info.items.map((item) => `
+          <div class="flex justify-between gap-3 py-0.5">
+            <span>• ${item.kategori} <span class="text-slate-400">(${item.dompet})</span></span>
+            <span class="font-semibold tabular-nums">${formatRp(item.nominal)}</span>
+          </div>
+        `).join("");
+      }
+
+      tt.classList.remove("hidden");
+      moveHeatmapTooltip(e);
+    }
+
+    function moveHeatmapTooltip(e) {
+      const tt = document.getElementById("heatmapTooltip");
+      const x = Math.min(window.innerWidth - 280, e.clientX + 14);
+      const y = Math.min(window.innerHeight - 160, e.clientY + 14);
+      tt.style.left = `${Math.max(12, x)}px`;
+      tt.style.top = `${Math.max(12, y)}px`;
+    }
+
+    function hideHeatmapTooltip() {
+      document.getElementById("heatmapTooltip").classList.add("hidden");
+    }
+
+    // =========================================================================
+    // 7. TRANSACTION LOG TABLE (READ-ONLY)
+    // =========================================================================
+    function renderTransactionTable(monthTx) {
+      const tbody = document.getElementById("txTableBody");
+      const filtered = monthTx.filter((tx) => {
+        const matchWallet = appState.walletFilter === "ALL" || tx.dompet.toLowerCase().includes(appState.walletFilter.toLowerCase());
+        const q = appState.searchQuery.toLowerCase();
+        const matchSearch = !q || tx.kategori.toLowerCase().includes(q) || tx.catatan.toLowerCase().includes(q) || tx.pos.toLowerCase().includes(q);
+        return matchWallet && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-10 px-5 text-center text-xs text-slate-400">
+              Tidak ada transaksi yang cocok dengan filter bulan / dompet saat ini.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      // Sort newest first
+      const sorted = [...filtered].sort((a, b) => b.tanggal.localeCompare(a.tanggal));
+
+      tbody.innerHTML = sorted.map((tx) => {
+        const tipeLower = tx.tipe.toLowerCase();
+        let amountColor = "text-rose-600";
+        let sign = "-";
+        if (tipeLower === "pemasukan") {
+          amountColor = "text-emerald-700";
+          sign = "+";
+        } else if (tipeLower === "tabungan") {
+          amountColor = "text-sky-700";
+          sign = "";
+        } else if (tipeLower === "transfer") {
+          amountColor = "text-slate-600";
+          sign = "⇄ ";
+        }
+
+        const isCash = tx.dompet.toLowerCase().includes("cash");
+        const walletBadge = isCash
+          ? `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">${tx.dompet}</span>`
+          : `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-sky-50 text-sky-800 border border-sky-200">${tx.dompet}</span>`;
+
+        let posBadge = `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700">${tx.pos}</span>`;
+        if (tx.pos.toLowerCase() === "needs") posBadge = `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700">Needs</span>`;
+        if (tx.pos.toLowerCase() === "wants") posBadge = `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700">Wants</span>`;
+        if (tx.pos.toLowerCase() === "savings") posBadge = `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-sky-50 text-sky-700">Savings</span>`;
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="py-3 px-5 font-mono text-xs text-slate-600 whitespace-nowrap">${tx.tanggal}</td>
+            <td class="py-3 px-4 text-xs font-semibold text-slate-800 whitespace-nowrap">${tx.tipe}</td>
+            <td class="py-3 px-4 whitespace-nowrap">${walletBadge}</td>
+            <td class="py-3 px-4 whitespace-nowrap">${posBadge}</td>
+            <td class="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">${tx.kategori}</td>
+            <td class="py-3 px-4 text-right font-bold tabular-nums whitespace-nowrap ${amountColor}">${sign}${formatRp(tx.nominal)}</td>
+            <td class="py-3 px-5 text-xs text-slate-500 max-w-xs truncate">${tx.catatan}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // =========================================================================
+    // 8. RENDER TAB 2: MINGGUAN (WEEKLY TACTICAL)
+    // =========================================================================
+    function getWeeksInMonth(year, month) {
+      const weeks = [];
+      const firstOfMonth = new Date(year, month - 1, 1);
+      const lastOfMonth = new Date(year, month, 0);
+
+      // Find Monday of the first week
+      const dayOfWeek = (firstOfMonth.getDay() + 6) % 7; // Mon=0
+      let currentStart = new Date(year, month - 1, 1 - dayOfWeek);
+
+      let weekNum = 1;
+      while (currentStart <= lastOfMonth) {
+        const currentEnd = new Date(currentStart);
+        currentEnd.setDate(currentStart.getDate() + 6);
+
+        const fmt = (dt) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+        weeks.push({
+          label: `Pekan ${weekNum} (${fmt(currentStart)} s/d ${fmt(currentEnd)})`,
+          start: new Date(currentStart),
+          end: new Date(currentEnd),
+          startStr: fmt(currentStart),
+          endStr: fmt(currentEnd)
+        });
+
+        currentStart.setDate(currentStart.getDate() + 7);
+        weekNum++;
+      }
+      return weeks;
+    }
+
+    function renderWeeklyView() {
+      const [yStr, mStr] = appState.selectedMonth.split("-");
+      const weeks = getWeeksInMonth(Number(yStr), Number(mStr));
+      const weekSelect = document.getElementById("weekSelector");
+
+      // Populate week options
+      weekSelect.innerHTML = weeks.map((w, idx) => `<option value="${idx}">${w.label}</option>`).join("");
+
+      // Auto-select week containing today if in current month, else week containing 22nd or last week with tx
+      if (appState.selectedWeekIndex >= weeks.length) appState.selectedWeekIndex = 0;
+      const todayStr = "2026-11-22";
+      const matchTodayIdx = weeks.findIndex((w) => todayStr >= w.startStr && todayStr <= w.endStr);
+      if (matchTodayIdx !== -1 && !weekSelect.dataset.userChanged) {
+        appState.selectedWeekIndex = matchTodayIdx;
+      }
+      weekSelect.value = appState.selectedWeekIndex;
+
+      const activeWeek = weeks[appState.selectedWeekIndex];
+      const basisIncome = appState.settings.monthlyIncomeTarget || 3000000;
+      const wkNeedsLimit = (basisIncome * 0.50) / 4.33;
+      const wkWantsLimit = (basisIncome * 0.30) / 4.33;
+      const wkTotalLimit = wkNeedsLimit + wkWantsLimit;
+
+      const dayNames = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
+      const dailyNeeds = [0, 0, 0, 0, 0, 0, 0];
+      const dailyWants = [0, 0, 0, 0, 0, 0, 0];
+      const dayDates = [];
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(activeWeek.start);
+        d.setDate(activeWeek.start.getDate() + i);
+        dayDates.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+      }
+
+      appState.transactions.forEach((tx) => {
+        const idx = dayDates.indexOf(tx.tanggal);
+        if (idx !== -1 && tx.tipe.toLowerCase() === "pengeluaran") {
+          if (tx.pos.toLowerCase() === "needs") dailyNeeds[idx] += tx.nominal;
+          else dailyWants[idx] += tx.nominal;
+        }
+      });
+
+      const sumNeeds = dailyNeeds.reduce((a, b) => a + b, 0);
+      const sumWants = dailyWants.reduce((a, b) => a + b, 0);
+      const sumTotal = sumNeeds + sumWants;
+      const noSpendCount = dailyNeeds.filter((n, i) => n + dailyWants[i] === 0).length;
+
+      document.getElementById("wkTotalOut").textContent = formatRp(sumTotal);
+      document.getElementById("wkTotalLimit").textContent = formatRp(wkTotalLimit);
+      document.getElementById("wkTotalStatus").textContent = sumTotal <= wkTotalLimit ? "✅ On Track" : "🚨 Over Limit";
+      document.getElementById("wkTotalStatus").className = `font-bold ${sumTotal <= wkTotalLimit ? "text-emerald-700" : "text-rose-600"}`;
+
+      document.getElementById("wkNeedsReal").textContent = formatRp(sumNeeds);
+      document.getElementById("wkNeedsLimit").textContent = formatRp(wkNeedsLimit);
+      document.getElementById("wkNeedsRem").textContent = formatRp(wkNeedsLimit - sumNeeds);
+
+      document.getElementById("wkWantsReal").textContent = formatRp(sumWants);
+      document.getElementById("wkWantsLimit").textContent = formatRp(wkWantsLimit);
+      document.getElementById("wkWantsRem").textContent = formatRp(wkWantsLimit - sumWants);
+
+      document.getElementById("wkNoSpendDays").textContent = `${noSpendCount} / 7 Hari`;
+
+      // Daily table
+      const dailyLimit = wkTotalLimit / 7;
+      document.getElementById("wkDailyTableBody").innerHTML = dayDates.map((dt, i) => {
+        const tot = dailyNeeds[i] + dailyWants[i];
+        let badge = `<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">🟢 No-Spend</span>`;
+        if (tot > 0 && tot <= dailyLimit) badge = `<span class="px-2 py-0.5 rounded bg-sky-50 text-sky-700 font-semibold">Aman</span>`;
+        else if (tot > dailyLimit) badge = `<span class="px-2 py-0.5 rounded bg-rose-50 text-rose-700 font-semibold">Tinggi</span>`;
+
+        return `
+          <tr>
+            <td class="py-2.5 font-medium text-slate-800">${dayNames[i]} <span class="text-slate-400 font-mono text-[11px]">(${dt.slice(5)})</span></td>
+            <td class="py-2.5 text-right font-bold tabular-nums text-slate-900">${formatRp(tot)}</td>
+            <td class="py-2.5 text-right">${badge}</td>
+          </tr>
+        `;
+      }).join("");
+
+      // Stacked Bar Chart
+      const ctxWk = document.getElementById("chartWeeklyStacked").getContext("2d");
+      if (chartInstances.weekly) chartInstances.weekly.destroy();
+
+      chartInstances.weekly = new Chart(ctxWk, {
+        type: "bar",
+        data: {
+          labels: dayNames,
+          datasets: [
+            { label: "Needs", data: dailyNeeds, backgroundColor: "#059669", borderRadius: 6 },
+            { label: "Wants", data: dailyWants, backgroundColor: "#f59e0b", borderRadius: 6 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "top", labels: { usePointStyle: true, font: { family: "Inter", size: 12 } } },
+            tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatRp(ctx.raw)}` } }
+          },
+          scales: {
+            x: { stacked: true, grid: { display: false } },
+            y: { stacked: true, grid: { color: "#f1f5f9" }, ticks: { callback: (v) => formatShortRp(v) } }
+          }
+        }
+      });
+    }
+
+    // =========================================================================
+    // 9. RENDER TAB 3: TAHUNAN & KEBEBASAN FINANSIAL (ANNUAL & WEALTH)
+    // =========================================================================
+    function renderAnnualView() {
+      const months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+      const labels = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+
+      const incArr = Array(12).fill(0);
+      const needsArr = Array(12).fill(0);
+      const wantsArr = Array(12).fill(0);
+      const expArr = Array(12).fill(0);
+      const savArr = Array(12).fill(0);
+      const savRatioArr = Array(12).fill(0);
+
+      appState.transactions.forEach((tx) => {
+        if (!tx.tanggal.startsWith("2026-")) return;
+        const mIdx = Number(tx.tanggal.split("-")[1]) - 1;
+        if (mIdx < 0 || mIdx > 11) return;
+
+        const tipe = tx.tipe.toLowerCase();
+        const pos = tx.pos.toLowerCase();
+        if (tipe === "pemasukan") incArr[mIdx] += tx.nominal;
+        else if (pos === "needs") needsArr[mIdx] += tx.nominal;
+        else if (pos === "wants") wantsArr[mIdx] += tx.nominal;
+        else if (pos === "savings" || tipe === "tabungan") savArr[mIdx] += tx.nominal;
+      });
+
+      let totalInc = 0, totalNeeds = 0, totalWants = 0, totalSav = 0;
+      let peakIdx = -1, peakVal = -1;
+      let lowIdx = -1, lowVal = Infinity;
+
+      for (let i = 0; i < 12; i++) {
+        expArr[i] = needsArr[i] + wantsArr[i];
+        savRatioArr[i] = incArr[i] > 0 ? Number(((savArr[i] / incArr[i]) * 100).toFixed(1)) : 0;
+
+        totalInc += incArr[i];
+        totalNeeds += needsArr[i];
+        totalWants += wantsArr[i];
+        totalSav += savArr[i];
+
+        if (expArr[i] > 0) {
+          if (expArr[i] > peakVal) { peakVal = expArr[i]; peakIdx = i; }
+          if (expArr[i] < lowVal) { lowVal = expArr[i]; lowIdx = i; }
+        }
+      }
+
+      const activeNeedsMonths = needsArr.filter((v) => v > 0);
+      const avgMonthlyNeeds = activeNeedsMonths.length > 0
+        ? activeNeedsMonths.reduce((a, b) => a + b, 0) / activeNeedsMonths.length
+        : (appState.settings.monthlyIncomeTarget * 0.50);
+
+      const wallets = computeWalletBalances();
+      const totalReserve = wallets.total + totalSav;
+      const runwayMonths = avgMonthlyNeeds > 0 ? (totalReserve / avgMonthlyNeeds) : 0;
+      const avgSavingRatio = totalInc > 0 ? ((totalSav / totalInc) * 100).toFixed(1) : "0.0";
+
+      document.getElementById("annNetWorthGrowth").textContent = formatRp(totalSav);
+      document.getElementById("annAvgSavingRatio").textContent = `Saving Ratio Tahunan: ${avgSavingRatio}%`;
+      document.getElementById("annRunwayMonths").textContent = `${runwayMonths.toFixed(1)} Bulan`;
+
+      document.getElementById("annPeakMonth").textContent = peakIdx !== -1 ? `${labels[peakIdx]} 2026` : "-";
+      document.getElementById("annPeakAmount").textContent = peakIdx !== -1 ? formatRp(peakVal) : "Rp 0";
+
+      document.getElementById("annLowestMonth").textContent = lowIdx !== -1 ? `${labels[lowIdx]} 2026` : "-";
+      document.getElementById("annLowestAmount").textContent = lowIdx !== -1 ? formatRp(lowVal) : "Rp 0";
+
+      document.getElementById("annTotalIncome").textContent = formatRp(totalInc);
+      document.getElementById("annTotalNeeds").textContent = formatRp(totalNeeds);
+      document.getElementById("annTotalWants").textContent = formatRp(totalWants);
+      document.getElementById("annTotalSavings").textContent = formatRp(totalSav);
+
+      // Emergency Fund Tracker
+      const efTarget = avgMonthlyNeeds * appState.efMultiplier;
+      const efPct = efTarget > 0 ? Math.min(100, (totalReserve / efTarget) * 100) : 0;
+
+      document.getElementById("efMonthlyNeeds").textContent = formatRp(avgMonthlyNeeds);
+      document.getElementById("efTargetIdeal").textContent = formatRp(efTarget);
+      document.getElementById("efCurrentFund").textContent = formatRp(totalReserve);
+      document.getElementById("efPctText").textContent = `${efPct.toFixed(1)}%`;
+      document.getElementById("efProgressBar").style.width = `${efPct}%`;
+
+      // Combo Chart
+      const ctxAnn = document.getElementById("chartAnnualCombo").getContext("2d");
+      if (chartInstances.annual) chartInstances.annual.destroy();
+
+      chartInstances.annual = new Chart(ctxAnn, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            { label: "Pemasukan", data: incArr, backgroundColor: "#059669", borderRadius: 5, order: 2 },
+            { label: "Total Pengeluaran", data: expArr, backgroundColor: "#f43f5e", borderRadius: 5, order: 3 },
+            { label: "Tabungan & Investasi", data: savArr, backgroundColor: "#0284c7", borderRadius: 5, order: 4 },
+            {
+              label: "Saving Ratio (%)",
+              data: savRatioArr,
+              type: "line",
+              borderColor: "#f59e0b",
+              backgroundColor: "#f59e0b",
+              borderWidth: 2.5,
+              tension: 0.35,
+              yAxisID: "y1",
+              order: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "top", labels: { usePointStyle: true, font: { family: "Inter", size: 12 } } }
+          },
+          scales: {
+            x: { grid: { display: false } },
+            y: {
+              position: "left",
+              grid: { color: "#f1f5f9" },
+              ticks: { callback: (v) => formatShortRp(v) }
+            },
+            y1: {
+              position: "right",
+              min: 0,
+              max: 100,
+              grid: { drawOnChartArea: false },
+              ticks: { callback: (v) => `${v}%` }
+            }
+          }
+        }
+      });
+    }
+
+    function renderAllViews() {
+      renderMonthlyView();
+      renderWeeklyView();
+      renderAnnualView();
+    }
+
+    // =========================================================================
+    // 10. EVENT LISTENERS & MODAL CONTROLS
+    // =========================================================================
+    function openConnectionModal() {
+      document.getElementById("sheetIdInput").value = activeSheetId;
+      const modal = document.getElementById("connectionModal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeConnectionModal() {
+      const modal = document.getElementById("connectionModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function saveAndReconnectSheet() {
+      const newId = document.getElementById("sheetIdInput").value.trim();
+      if (newId) {
+        activeSheetId = newId;
+        localStorage.setItem("pf_sheet_id", newId);
+      }
+      closeConnectionModal();
+      loadDashboardData();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Tab navigation
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tab-btn").forEach((b) => {
+            b.className = "tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition whitespace-nowrap";
+          });
+          btn.className = "tab-btn active-tab flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-500 text-slate-950 shadow-sm transition whitespace-nowrap";
+
+          const target = btn.dataset.tab;
+          document.getElementById("view-monthly").classList.toggle("hidden", target !== "monthly");
+          document.getElementById("view-weekly").classList.toggle("hidden", target !== "weekly");
+          document.getElementById("view-annual").classList.toggle("hidden", target !== "annual");
+        });
+      });
+
+      // Month selector
+      document.getElementById("monthSelector").addEventListener("change", (e) => {
+        appState.selectedMonth = e.target.value;
+        appState.selectedWeekIndex = 0;
+        delete document.getElementById("weekSelector").dataset.userChanged;
+        renderAllViews();
+      });
+
+      // Week selector
+      document.getElementById("weekSelector").addEventListener("change", (e) => {
+        e.target.dataset.userChanged = "true";
+        appState.selectedWeekIndex = Number(e.target.value);
+        renderWeeklyView();
+      });
+
+      // Emergency Fund multiplier
+      document.getElementById("efMultiplierSelect").addEventListener("change", (e) => {
+        appState.efMultiplier = Number(e.target.value);
+        renderAnnualView();
+      });
+
+      // Wallet filter buttons
+      document.querySelectorAll(".wallet-filter-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".wallet-filter-btn").forEach((b) => {
+            b.className = "wallet-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+          });
+          btn.className = "wallet-filter-btn px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition";
+          appState.walletFilter = btn.dataset.wallet;
+          const monthTx = appState.transactions.filter((t) => t.tanggal.startsWith(appState.selectedMonth));
+          renderTransactionTable(monthTx);
+        });
+      });
+
+      // Search input
+      document.getElementById("txSearchInput").addEventListener("input", (e) => {
+        appState.searchQuery = e.target.value;
+        const monthTx = appState.transactions.filter((t) => t.tanggal.startsWith(appState.selectedMonth));
+        renderTransactionTable(monthTx);
+      });
+
+      // Buttons
+      document.getElementById("btnRefresh").addEventListener("click", loadDashboardData);
+      document.getElementById("btnOpenGuide").addEventListener("click", openConnectionModal);
+
+      // Initial load
+      loadDashboardData();
+    });
+  </script>
+</body>
+</html>
