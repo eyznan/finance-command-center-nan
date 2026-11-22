@@ -481,6 +481,33 @@
 
       </div>
 
+      <!-- ROW 3B: KOMPOSISI DOMPET & TREN ARUS KAS BULANAN 2026 -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Stacked Bar Chart: Komposisi Likuiditas Dompet (Cash vs Bank) -->
+        <div class="lg:col-span-5 card-elevated rounded-2xl p-6">
+          <div class="mb-4">
+            <h3 class="font-display font-bold text-base text-slate-900">Komposisi Dompet (Cash vs Bank)</h3>
+            <p class="text-xs text-slate-500">Perbandingan posisi saldo tunai dan m-Banking real-time</p>
+          </div>
+          <div class="relative h-60">
+            <canvas id="chartWalletStacked"></canvas>
+          </div>
+        </div>
+
+        <!-- Bar Chart: Tren Pemasukan vs Pengeluaran 2026 -->
+        <div class="lg:col-span-7 card-elevated rounded-2xl p-6">
+          <div class="mb-4">
+            <h3 class="font-display font-bold text-base text-slate-900">Tren Pemasukan vs Pengeluaran (2026)</h3>
+            <p class="text-xs text-slate-500">Rekapitulasi arus kas bulanan sepanjang tahun berjalan</p>
+          </div>
+          <div class="relative h-60">
+            <canvas id="chartMonthlyTrendOverview"></canvas>
+          </div>
+        </div>
+
+      </div>
+
       <!-- ROW 4: TRANSACTION CALENDAR HEATMAP -->
       <div class="card-elevated rounded-2xl p-6">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-5 border-b border-slate-100">
@@ -927,8 +954,8 @@
         needsPct: 0.50,
         wantsPct: 0.30,
         savingsPct: 0.20,
-        initialCash: 0,
-        initialBank: 0
+        initialCash: 134000,
+        initialBank: 521158
       },
       transactions: [
         {
@@ -940,6 +967,16 @@
           nominal: 25000,
           catatan: "Nasi padang",
           dompet: "Bank"
+        },
+        {
+          timestamp: "2026-11-22 17:30:00",
+          tanggal: "2026-11-22",
+          tipe: "Pengeluaran",
+          pos: "Needs",
+          kategori: "Makan",
+          nominal: 12500,
+          catatan: "Sari Roti",
+          dompet: "Cash"
         }
       ]
     };
@@ -959,6 +996,8 @@
     let chartInstances = {
       donut: null,
       topCat: null,
+      walletStack: null,
+      monthlyTrend: null,
       weekly: null,
       annual: null
     };
@@ -981,14 +1020,34 @@
 
     function parseNumberSafe(val) {
       if (typeof val === "number") return isNaN(val) ? 0 : val;
-      if (!val) return 0;
-      const cleaned = String(val).replace(/[^0-9.-]+/g, "");
-      const parsed = parseFloat(cleaned);
+      if (val === null || val === undefined || val === "") return 0;
+      let str = String(val).trim();
+      // Bersihkan simbol Rp/spasi
+      str = str.replace(/rp/gi, "").replace(/\s+/g, "");
+      // Jika format ribuan Indonesia menggunakan titik tanpa desimal (misal "134.000" atau "521.158")
+      if (/^-?\d{1,3}(\.\d{3})+$/.test(str)) {
+        str = str.replace(/\./g, "");
+      } else if (/^-?\d{1,3}(,\d{3})+$/.test(str)) {
+        str = str.replace(/,/g, "");
+      } else {
+        str = str.replace(/[^0-9.-]+/g, "");
+      }
+      const parsed = parseFloat(str);
       return isNaN(parsed) ? 0 : parsed;
     }
 
+    function extractCellNumber(cell) {
+      if (!cell) return 0;
+      if (typeof cell.v === "number" && !isNaN(cell.v)) return cell.v;
+      if (cell.f) {
+        const fromFormatted = parseNumberSafe(cell.f);
+        if (fromFormatted !== 0) return fromFormatted;
+      }
+      return parseNumberSafe(cell.v);
+    }
+
     function normalizeDateString(rawVal, formattedVal) {
-      // Handle Google Visualization Date(yyyy, m, d) format
+      // Handle Google Visualization Date(yyyy, m, d) format (m is 0-indexed)
       if (typeof rawVal === "string" && rawVal.startsWith("Date(")) {
         const nums = rawVal.replace("Date(", "").replace(")", "").split(",").map(Number);
         if (nums.length >= 3) {
@@ -1000,16 +1059,22 @@
       }
       const str = String(formattedVal || rawVal || "").trim();
       if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
+      // Handle DD/MM/YYYY if formatted in Indonesian locale
+      const dmy = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+      if (dmy) {
+        return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`;
+      }
       return str;
     }
 
     // =========================================================================
-    // 3. GOOGLE SHEETS GVIZ LIVE CONNECTOR
+    // 3. GOOGLE SHEETS GVIZ LIVE CONNECTOR (headers=0 AGAR BARIS AWAL AMAN)
     // =========================================================================
-    function fetchGvizSheet(sheetId, sheetName) {
+    function fetchGvizSheet(sheetId, sheetName, useZeroHeaders = false) {
       return new Promise((resolve, reject) => {
-        const callbackName = "gvizCb_" + sheetName.replace(/[^a-zA-Z0-9]/g, "") + "_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
-        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:${callbackName}&sheet=${encodeURIComponent(sheetName)}`;
+        const callbackName = "gvizCb_" + sheetName.replace(/[^a-zA-Z0-9]/g, "") + "_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+        const headerParam = useZeroHeaders ? "&headers=0" : "";
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:${callbackName}&sheet=${encodeURIComponent(sheetName)}${headerParam}`;
         
         const script = document.createElement("script");
         let isSettled = false;
@@ -1057,39 +1122,79 @@
       refreshIcon.classList.add("animate-spin");
 
       try {
+        // Gunakan headers=0 pada kedua tab agar Google gviz tidak menelan baris pertama/saldo awal
         const [txTable, budgetTable] = await Promise.all([
-          fetchGvizSheet(activeSheetId, "Transaksi"),
-          fetchGvizSheet(activeSheetId, "Budget_Setting")
+          fetchGvizSheet(activeSheetId, "Transaksi", true),
+          fetchGvizSheet(activeSheetId, "Budget_Setting", true)
         ]);
 
-        // Parse Budget_Setting
+        // 1. Parse Budget_Setting secara menyeluruh (baik rows maupun cols)
         const parsedSettings = { ...FALLBACK_DATA.settings };
-        if (budgetTable && budgetTable.rows) {
-          budgetTable.rows.forEach((row) => {
-            const c0 = row.c && row.c[0] ? String(row.c[0].v || "").toLowerCase() : "";
-            const c1Val = row.c && row.c[1] ? parseNumberSafe(row.c[1].v) : 0;
-            if (c0.includes("target pemasukan")) parsedSettings.monthlyIncomeTarget = c1Val || 3000000;
-            if (c0.includes("saldo awal cash")) parsedSettings.initialCash = c1Val;
-            if (c0.includes("saldo awal bank")) parsedSettings.initialBank = c1Val;
-          });
+        let foundCash = false;
+        let foundBank = false;
+
+        if (budgetTable) {
+          // Cek apabila ada informasi terbaca di table.cols
+          if (Array.isArray(budgetTable.cols) && budgetTable.cols.length >= 2) {
+            const colLabel0 = String(budgetTable.cols[0].label || "").toLowerCase();
+            const colLabel1Num = parseNumberSafe(budgetTable.cols[1].label);
+            if (colLabel0.includes("cash") && colLabel1Num > 0) {
+              parsedSettings.initialCash = colLabel1Num;
+              foundCash = true;
+            }
+            if (colLabel0.includes("bank") && colLabel1Num > 0) {
+              parsedSettings.initialBank = colLabel1Num;
+              foundBank = true;
+            }
+          }
+
+          // Pindai seluruh baris di Budget_Setting
+          if (Array.isArray(budgetTable.rows)) {
+            budgetTable.rows.forEach((row) => {
+              const cells = row.c || [];
+              for (let idx = 0; idx < cells.length; idx++) {
+                const cellText = cells[idx] ? String(cells[idx].f || cells[idx].v || "").toLowerCase().trim() : "";
+                if (!cellText) continue;
+
+                // Ambil angka dari sel sebelah kanannya (idx + 1)
+                const nextCellVal = (idx + 1 < cells.length) ? extractCellNumber(cells[idx + 1]) : 0;
+
+                if (cellText.includes("target pemasukan") && nextCellVal > 0) {
+                  parsedSettings.monthlyIncomeTarget = nextCellVal;
+                } else if (cellText.includes("saldo awal cash") || (cellText.includes("cash") && !cellText.includes("bank") && nextCellVal > 0)) {
+                  parsedSettings.initialCash = nextCellVal;
+                  foundCash = true;
+                } else if (cellText.includes("saldo awal bank") || (cellText.includes("bank") && !cellText.includes("cash") && nextCellVal > 0)) {
+                  parsedSettings.initialBank = nextCellVal;
+                  foundBank = true;
+                }
+              }
+            });
+          }
         }
 
-        // Parse Transaksi
+        // Gunakan fallback akurat jika sel belum terbaca
+        if (!foundCash && parsedSettings.initialCash === 0) parsedSettings.initialCash = FALLBACK_DATA.settings.initialCash;
+        if (!foundBank && parsedSettings.initialBank === 0) parsedSettings.initialBank = FALLBACK_DATA.settings.initialBank;
+
+        // 2. Parse Transaksi (headers=0 sehingga baris header 'Timestamp | Tanggal | ...' dilewati eksplisit)
         const parsedTx = [];
-        if (txTable && txTable.rows) {
+        if (txTable && Array.isArray(txTable.rows)) {
           txTable.rows.forEach((row) => {
             const c = row.c || [];
             const rawDate = c[1] ? c[1].v : "";
             const fmtDate = c[1] ? c[1].f : "";
             const tanggal = normalizeDateString(rawDate, fmtDate);
-            const tipe = c[2] ? String(c[2].v || "").trim() : "";
-            if (!tanggal || !tipe || tipe.toLowerCase() === "tipe") return;
+            const tipe = c[2] ? String(c[2].f || c[2].v || "").trim() : "";
 
-            const pos = c[3] ? String(c[3].v || "").trim() : "Wants";
-            const kategori = c[4] ? String(c[4].v || "Lainnya").trim() : "Lainnya";
-            const nominal = c[5] ? parseNumberSafe(c[5].v) : 0;
-            const catatan = c[6] && c[6].v !== null ? String(c[6].v).trim() : "-";
-            const dompet = c[7] && c[7].v !== null ? String(c[7].v).trim() : "Bank";
+            // Lewati baris header atau baris kosong
+            if (!tanggal || !tipe || tipe.toLowerCase() === "tipe" || tanggal.toLowerCase() === "tanggal") return;
+
+            const pos = c[3] ? String(c[3].f || c[3].v || "").trim() : "Wants";
+            const kategori = c[4] ? String(c[4].f || c[4].v || "Lainnya").trim() : "Lainnya";
+            const nominal = extractCellNumber(c[5]);
+            const catatan = c[6] && c[6].v !== null ? String(c[6].f || c[6].v).trim() : "-";
+            const dompet = c[7] && c[7].v !== null ? String(c[7].f || c[7].v).trim() : "Bank";
 
             parsedTx.push({
               timestamp: c[0] ? String(c[0].f || c[0].v || "") : tanggal,
@@ -1145,30 +1250,39 @@
     // 4. PERHITUNGAN SALDO REAL-TIME DOMPET (CASH & BANK)
     // =========================================================================
     function computeWalletBalances() {
-      let cash = appState.settings.initialCash || 0;
-      let bank = appState.settings.initialBank || 0;
+      const saldoAwalCash = appState.settings.initialCash || 0;
+      const saldoAwalBank = appState.settings.initialBank || 0;
+
+      let pemasukanCash = 0, pengeluaranCash = 0, tabunganCash = 0, transferKeCash = 0, transferDariCash = 0;
+      let pemasukanBank = 0, pengeluaranBank = 0, tabunganBank = 0, transferKeBank = 0, transferDariBank = 0;
 
       appState.transactions.forEach((tx) => {
-        const tipe = tx.tipe.toLowerCase();
-        const dompet = (tx.dompet || "Bank").toLowerCase();
-        const nom = tx.nominal || 0;
+        const tipe = (tx.tipe || "").toLowerCase().trim();
+        const dompet = (tx.dompet || "Bank").toLowerCase().trim();
+        const nom = Number(tx.nominal) || 0;
 
         if (tipe === "pemasukan") {
-          if (dompet === "cash") cash += nom;
-          else bank += nom;
-        } else if (tipe === "pengeluaran" || tipe === "tabungan") {
-          if (dompet === "cash") cash -= nom;
-          else bank -= nom;
+          if (dompet === "cash" || dompet === "tunai") pemasukanCash += nom;
+          else pemasukanBank += nom;
+        } else if (tipe === "pengeluaran") {
+          if (dompet === "cash" || dompet === "tunai") pengeluaranCash += nom;
+          else pengeluaranBank += nom;
+        } else if (tipe === "tabungan") {
+          if (dompet === "cash" || dompet === "tunai") tabunganCash += nom;
+          else tabunganBank += nom;
         } else if (tipe === "transfer") {
-          if (dompet.includes("bank ke cash")) {
-            bank -= nom;
-            cash += nom;
-          } else if (dompet.includes("cash ke bank")) {
-            cash -= nom;
-            bank += nom;
+          if (dompet.includes("bank ke cash") || dompet.includes("bank to cash")) {
+            transferDariBank += nom;
+            transferKeCash += nom;
+          } else if (dompet.includes("cash ke bank") || dompet.includes("cash to bank")) {
+            transferDariCash += nom;
+            transferKeBank += nom;
           }
         }
       });
+
+      const cash = saldoAwalCash + pemasukanCash - pengeluaranCash - tabunganCash + transferKeCash - transferDariCash;
+      const bank = saldoAwalBank + pemasukanBank - pengeluaranBank - tabunganBank + transferKeBank - transferDariBank;
 
       return { cash, bank, total: cash + bank };
     }
@@ -1336,12 +1450,12 @@
       document.getElementById("summaryNetSurplus").className = `font-display font-extrabold text-sm tabular-nums ${netSurplus >= 0 ? "text-emerald-700" : "text-rose-600"}`;
 
       // Render Charts, Heatmap, and Table
-      renderMonthlyCharts(needsReal, wantsReal, savingsReal, monthTx);
+      renderMonthlyCharts(needsReal, wantsReal, savingsReal, monthTx, wallets);
       renderCalendarHeatmap(y, m, monthTx);
       renderTransactionTable(monthTx);
     }
 
-    function renderMonthlyCharts(needsReal, wantsReal, savingsReal, monthTx) {
+    function renderMonthlyCharts(needsReal, wantsReal, savingsReal, monthTx, wallets) {
       // 1. Donut Chart
       const ctxDonut = document.getElementById("chartAllocationDonut").getContext("2d");
       if (chartInstances.donut) chartInstances.donut.destroy();
@@ -1434,355 +1548,91 @@
           }
         }
       });
-    }
 
-    // =========================================================================
-    // 6. TRANSACTION CALENDAR HEATMAP ENGINE
-    // =========================================================================
-    function renderCalendarHeatmap(year, month, monthTx) {
-      document.getElementById("heatmapMonthTitle").textContent = `${year}-${String(month).padStart(2, "0")}`;
-      const grid = document.getElementById("calendarHeatmapGrid");
-      grid.innerHTML = "";
+      // 3. Stacked Bar Chart: Komposisi Dompet (Cash vs Bank)
+      const ctxWallet = document.getElementById("chartWalletStacked").getContext("2d");
+      if (chartInstances.walletStack) chartInstances.walletStack.destroy();
 
-      const daysInMonth = new Date(year, month, 0).getDate();
-      // Monday = 0, Sunday = 6
-      const firstDayJs = new Date(year, month - 1, 1).getDay();
-      const startOffset = (firstDayJs + 6) % 7;
-
-      // Group expenses by day
-      const dailyMap = {};
-      for (let d = 1; d <= daysInMonth; d++) {
-        dailyMap[d] = { totalExpense: 0, items: [] };
-      }
-
-      let maxDailySpend = 0;
-      let peakDay = null;
-      let weekdayTotal = 0;
-      let weekendTotal = 0;
-
-      monthTx.forEach((tx) => {
-        const dayNum = Number(tx.tanggal.split("-")[2]);
-        if (!dailyMap[dayNum]) return;
-        dailyMap[dayNum].items.push(tx);
-
-        if (tx.tipe.toLowerCase() === "pengeluaran") {
-          dailyMap[dayNum].totalExpense += tx.nominal;
-          const jsDay = new Date(year, month - 1, dayNum).getDay();
-          if (jsDay === 0 || jsDay === 6) weekendTotal += tx.nominal;
-          else weekdayTotal += tx.nominal;
-        }
-      });
-
-      let noSpendCount = 0;
-      let activeSpendCount = 0;
-
-      for (let d = 1; d <= daysInMonth; d++) {
-        const spent = dailyMap[d].totalExpense;
-        if (spent === 0) noSpendCount++;
-        else activeSpendCount++;
-
-        if (spent > maxDailySpend) {
-          maxDailySpend = spent;
-          peakDay = d;
-        }
-      }
-
-      // Update pattern insights
-      document.getElementById("calNoSpendCount").textContent = `${noSpendCount} hari`;
-      document.getElementById("calActiveSpendCount").textContent = `${activeSpendCount} hari`;
-      document.getElementById("calPeakAmount").textContent = formatRp(maxDailySpend);
-      document.getElementById("calPeakDateLabel").textContent = peakDay ? `Tanggal ${peakDay} (${year}-${String(month).padStart(2, "0")}-${String(peakDay).padStart(2, "0")})` : "Belum ada belanja";
-
-      const combinedWw = weekdayTotal + weekendTotal;
-      const wdPct = combinedWw > 0 ? Math.round((weekdayTotal / combinedWw) * 100) : 50;
-      const wePct = combinedWw > 0 ? 100 - wdPct : 50;
-
-      document.getElementById("barWeekdayPct").style.width = `${wdPct}%`;
-      document.getElementById("barWeekendPct").style.width = `${wePct}%`;
-      document.getElementById("calWeekdayTotal").textContent = `${formatShortRp(weekdayTotal)} (${wdPct}%)`;
-      document.getElementById("calWeekendTotal").textContent = `${formatShortRp(weekendTotal)} (${wePct}%)`;
-
-      // Empty leading cells
-      for (let i = 0; i < startOffset; i++) {
-        const emptyCell = document.createElement("div");
-        emptyCell.className = "h-14 sm:h-16 rounded-xl bg-slate-50/50 border border-transparent";
-        grid.appendChild(emptyCell);
-      }
-
-      // Day cells
-      for (let d = 1; d <= daysInMonth; d++) {
-        const info = dailyMap[d];
-        const spent = info.totalExpense;
-        const ratio = maxDailySpend > 0 ? spent / maxDailySpend : 0;
-
-        let colorClass = "bg-emerald-50/70 border-emerald-200/80 text-emerald-950";
-        let amountClass = "text-emerald-700";
-        if (spent > 0 && ratio <= 0.33) {
-          colorClass = "bg-amber-100/90 border-amber-300 text-amber-950";
-          amountClass = "text-amber-900 font-bold";
-        } else if (ratio > 0.33 && ratio <= 0.70) {
-          colorClass = "bg-orange-200 border-orange-400 text-orange-950";
-          amountClass = "text-orange-950 font-bold";
-        } else if (ratio > 0.70) {
-          colorClass = "bg-rose-500 border-rose-600 text-white shadow-sm";
-          amountClass = "text-white font-extrabold";
-        }
-
-        const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-        const cell = document.createElement("div");
-        cell.className = `heatmap-cell h-14 sm:h-16 rounded-xl border p-1.5 sm:p-2 flex flex-col justify-between cursor-pointer select-none ${colorClass}`;
-        cell.innerHTML = `
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] sm:text-xs font-bold">${d}</span>
-            ${info.items.length > 0 ? `<span class="w-1.5 h-1.5 rounded-full ${ratio > 0.70 ? "bg-white" : "bg-slate-600"}"></span>` : ""}
-          </div>
-          <div class="text-[10px] sm:text-[11px] truncate tabular-nums ${amountClass}">
-            ${spent > 0 ? formatShortRp(spent) : "Rp 0"}
-          </div>
-        `;
-
-        // Tooltip events
-        cell.addEventListener("mouseenter", (e) => showHeatmapTooltip(e, dateStr, info));
-        cell.addEventListener("mousemove", (e) => moveHeatmapTooltip(e));
-        cell.addEventListener("mouseleave", hideHeatmapTooltip);
-        cell.addEventListener("click", (e) => showHeatmapTooltip(e, dateStr, info));
-
-        grid.appendChild(cell);
-      }
-    }
-
-    function showHeatmapTooltip(e, dateStr, info) {
-      const tt = document.getElementById("heatmapTooltip");
-      document.getElementById("ttDate").textContent = dateStr;
-      document.getElementById("ttTotal").textContent = formatRp(info.totalExpense);
-
-      const list = document.getElementById("ttList");
-      if (info.items.length === 0) {
-        list.innerHTML = `<div class="text-emerald-300 font-medium">🟢 No-Spend Day (Tidak ada transaksi)</div>`;
-      } else {
-        list.innerHTML = info.items.map((item) => `
-          <div class="flex justify-between gap-3 py-0.5">
-            <span>• ${item.kategori} <span class="text-slate-400">(${item.dompet})</span></span>
-            <span class="font-semibold tabular-nums">${formatRp(item.nominal)}</span>
-          </div>
-        `).join("");
-      }
-
-      tt.classList.remove("hidden");
-      moveHeatmapTooltip(e);
-    }
-
-    function moveHeatmapTooltip(e) {
-      const tt = document.getElementById("heatmapTooltip");
-      const x = Math.min(window.innerWidth - 280, e.clientX + 14);
-      const y = Math.min(window.innerHeight - 160, e.clientY + 14);
-      tt.style.left = `${Math.max(12, x)}px`;
-      tt.style.top = `${Math.max(12, y)}px`;
-    }
-
-    function hideHeatmapTooltip() {
-      document.getElementById("heatmapTooltip").classList.add("hidden");
-    }
-
-    // =========================================================================
-    // 7. TRANSACTION LOG TABLE (READ-ONLY)
-    // =========================================================================
-    function renderTransactionTable(monthTx) {
-      const tbody = document.getElementById("txTableBody");
-      const filtered = monthTx.filter((tx) => {
-        const matchWallet = appState.walletFilter === "ALL" || tx.dompet.toLowerCase().includes(appState.walletFilter.toLowerCase());
-        const q = appState.searchQuery.toLowerCase();
-        const matchSearch = !q || tx.kategori.toLowerCase().includes(q) || tx.catatan.toLowerCase().includes(q) || tx.pos.toLowerCase().includes(q);
-        return matchWallet && matchSearch;
-      });
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7" class="py-10 px-5 text-center text-xs text-slate-400">
-              Tidak ada transaksi yang cocok dengan filter bulan / dompet saat ini.
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      // Sort newest first
-      const sorted = [...filtered].sort((a, b) => b.tanggal.localeCompare(a.tanggal));
-
-      tbody.innerHTML = sorted.map((tx) => {
-        const tipeLower = tx.tipe.toLowerCase();
-        let amountColor = "text-rose-600";
-        let sign = "-";
-        if (tipeLower === "pemasukan") {
-          amountColor = "text-emerald-700";
-          sign = "+";
-        } else if (tipeLower === "tabungan") {
-          amountColor = "text-sky-700";
-          sign = "";
-        } else if (tipeLower === "transfer") {
-          amountColor = "text-slate-600";
-          sign = "⇄ ";
-        }
-
-        const isCash = tx.dompet.toLowerCase().includes("cash");
-        const walletBadge = isCash
-          ? `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">${tx.dompet}</span>`
-          : `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-sky-50 text-sky-800 border border-sky-200">${tx.dompet}</span>`;
-
-        let posBadge = `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700">${tx.pos}</span>`;
-        if (tx.pos.toLowerCase() === "needs") posBadge = `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700">Needs</span>`;
-        if (tx.pos.toLowerCase() === "wants") posBadge = `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700">Wants</span>`;
-        if (tx.pos.toLowerCase() === "savings") posBadge = `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-sky-50 text-sky-700">Savings</span>`;
-
-        return `
-          <tr class="hover:bg-slate-50/80 transition">
-            <td class="py-3 px-5 font-mono text-xs text-slate-600 whitespace-nowrap">${tx.tanggal}</td>
-            <td class="py-3 px-4 text-xs font-semibold text-slate-800 whitespace-nowrap">${tx.tipe}</td>
-            <td class="py-3 px-4 whitespace-nowrap">${walletBadge}</td>
-            <td class="py-3 px-4 whitespace-nowrap">${posBadge}</td>
-            <td class="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">${tx.kategori}</td>
-            <td class="py-3 px-4 text-right font-bold tabular-nums whitespace-nowrap ${amountColor}">${sign}${formatRp(tx.nominal)}</td>
-            <td class="py-3 px-5 text-xs text-slate-500 max-w-xs truncate">${tx.catatan}</td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    // =========================================================================
-    // 8. RENDER TAB 2: MINGGUAN (WEEKLY TACTICAL)
-    // =========================================================================
-    function getWeeksInMonth(year, month) {
-      const weeks = [];
-      const firstOfMonth = new Date(year, month - 1, 1);
-      const lastOfMonth = new Date(year, month, 0);
-
-      // Find Monday of the first week
-      const dayOfWeek = (firstOfMonth.getDay() + 6) % 7; // Mon=0
-      let currentStart = new Date(year, month - 1, 1 - dayOfWeek);
-
-      let weekNum = 1;
-      while (currentStart <= lastOfMonth) {
-        const currentEnd = new Date(currentStart);
-        currentEnd.setDate(currentStart.getDate() + 6);
-
-        const fmt = (dt) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
-        weeks.push({
-          label: `Pekan ${weekNum} (${fmt(currentStart)} s/d ${fmt(currentEnd)})`,
-          start: new Date(currentStart),
-          end: new Date(currentEnd),
-          startStr: fmt(currentStart),
-          endStr: fmt(currentEnd)
-        });
-
-        currentStart.setDate(currentStart.getDate() + 7);
-        weekNum++;
-      }
-      return weeks;
-    }
-
-    function renderWeeklyView() {
-      const [yStr, mStr] = appState.selectedMonth.split("-");
-      const weeks = getWeeksInMonth(Number(yStr), Number(mStr));
-      const weekSelect = document.getElementById("weekSelector");
-
-      // Populate week options
-      weekSelect.innerHTML = weeks.map((w, idx) => `<option value="${idx}">${w.label}</option>`).join("");
-
-      // Auto-select week containing today if in current month, else week containing 22nd or last week with tx
-      if (appState.selectedWeekIndex >= weeks.length) appState.selectedWeekIndex = 0;
-      const todayStr = "2026-11-22";
-      const matchTodayIdx = weeks.findIndex((w) => todayStr >= w.startStr && todayStr <= w.endStr);
-      if (matchTodayIdx !== -1 && !weekSelect.dataset.userChanged) {
-        appState.selectedWeekIndex = matchTodayIdx;
-      }
-      weekSelect.value = appState.selectedWeekIndex;
-
-      const activeWeek = weeks[appState.selectedWeekIndex];
-      const basisIncome = appState.settings.monthlyIncomeTarget || 3000000;
-      const wkNeedsLimit = (basisIncome * 0.50) / 4.33;
-      const wkWantsLimit = (basisIncome * 0.30) / 4.33;
-      const wkTotalLimit = wkNeedsLimit + wkWantsLimit;
-
-      const dayNames = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
-      const dailyNeeds = [0, 0, 0, 0, 0, 0, 0];
-      const dailyWants = [0, 0, 0, 0, 0, 0, 0];
-      const dayDates = [];
-
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(activeWeek.start);
-        d.setDate(activeWeek.start.getDate() + i);
-        dayDates.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
-      }
-
-      appState.transactions.forEach((tx) => {
-        const idx = dayDates.indexOf(tx.tanggal);
-        if (idx !== -1 && tx.tipe.toLowerCase() === "pengeluaran") {
-          if (tx.pos.toLowerCase() === "needs") dailyNeeds[idx] += tx.nominal;
-          else dailyWants[idx] += tx.nominal;
-        }
-      });
-
-      const sumNeeds = dailyNeeds.reduce((a, b) => a + b, 0);
-      const sumWants = dailyWants.reduce((a, b) => a + b, 0);
-      const sumTotal = sumNeeds + sumWants;
-      const noSpendCount = dailyNeeds.filter((n, i) => n + dailyWants[i] === 0).length;
-
-      document.getElementById("wkTotalOut").textContent = formatRp(sumTotal);
-      document.getElementById("wkTotalLimit").textContent = formatRp(wkTotalLimit);
-      document.getElementById("wkTotalStatus").textContent = sumTotal <= wkTotalLimit ? "✅ On Track" : "🚨 Over Limit";
-      document.getElementById("wkTotalStatus").className = `font-bold ${sumTotal <= wkTotalLimit ? "text-emerald-700" : "text-rose-600"}`;
-
-      document.getElementById("wkNeedsReal").textContent = formatRp(sumNeeds);
-      document.getElementById("wkNeedsLimit").textContent = formatRp(wkNeedsLimit);
-      document.getElementById("wkNeedsRem").textContent = formatRp(wkNeedsLimit - sumNeeds);
-
-      document.getElementById("wkWantsReal").textContent = formatRp(sumWants);
-      document.getElementById("wkWantsLimit").textContent = formatRp(wkWantsLimit);
-      document.getElementById("wkWantsRem").textContent = formatRp(wkWantsLimit - sumWants);
-
-      document.getElementById("wkNoSpendDays").textContent = `${noSpendCount} / 7 Hari`;
-
-      // Daily table
-      const dailyLimit = wkTotalLimit / 7;
-      document.getElementById("wkDailyTableBody").innerHTML = dayDates.map((dt, i) => {
-        const tot = dailyNeeds[i] + dailyWants[i];
-        let badge = `<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">🟢 No-Spend</span>`;
-        if (tot > 0 && tot <= dailyLimit) badge = `<span class="px-2 py-0.5 rounded bg-sky-50 text-sky-700 font-semibold">Aman</span>`;
-        else if (tot > dailyLimit) badge = `<span class="px-2 py-0.5 rounded bg-rose-50 text-rose-700 font-semibold">Tinggi</span>`;
-
-        return `
-          <tr>
-            <td class="py-2.5 font-medium text-slate-800">${dayNames[i]} <span class="text-slate-400 font-mono text-[11px]">(${dt.slice(5)})</span></td>
-            <td class="py-2.5 text-right font-bold tabular-nums text-slate-900">${formatRp(tot)}</td>
-            <td class="py-2.5 text-right">${badge}</td>
-          </tr>
-        `;
-      }).join("");
-
-      // Stacked Bar Chart
-      const ctxWk = document.getElementById("chartWeeklyStacked").getContext("2d");
-      if (chartInstances.weekly) chartInstances.weekly.destroy();
-
-      chartInstances.weekly = new Chart(ctxWk, {
+      chartInstances.walletStack = new Chart(ctxWallet, {
         type: "bar",
         data: {
-          labels: dayNames,
+          labels: ["Posisi Likuiditas Dompet"],
           datasets: [
-            { label: "Needs", data: dailyNeeds, backgroundColor: "#059669", borderRadius: 6 },
-            { label: "Wants", data: dailyWants, backgroundColor: "#f59e0b", borderRadius: 6 }
+            {
+              label: "Saldo Cash (Tunai)",
+              data: [Math.max(0, wallets.cash)],
+              backgroundColor: "#f59e0b",
+              borderRadius: 8,
+              barThickness: 54
+            },
+            {
+              label: "Saldo Bank (m-Banking)",
+              data: [Math.max(0, wallets.bank)],
+              backgroundColor: "#0284c7",
+              borderRadius: 8,
+              barThickness: 54
+            }
+          ]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom", labels: { usePointStyle: true, font: { family: "Inter", size: 12, weight: "600" } } },
+            tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatRp(ctx.raw)}` } }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              grid: { color: "#f1f5f9" },
+              ticks: { callback: (v) => formatShortRp(v) }
+            },
+            y: {
+              stacked: true,
+              grid: { display: false },
+              ticks: { display: false }
+            }
+          }
+        }
+      });
+
+      // 4. Bar Chart: Tren Pemasukan vs Pengeluaran 2026
+      const labels12 = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+      const inc12 = Array(12).fill(0);
+      const exp12 = Array(12).fill(0);
+
+      appState.transactions.forEach((tx) => {
+        if (!tx.tanggal.startsWith("2026-")) return;
+        const idx = Number(tx.tanggal.split("-")[1]) - 1;
+        if (idx < 0 || idx > 11) return;
+        const tipe = tx.tipe.toLowerCase();
+        if (tipe === "pemasukan") inc12[idx] += tx.nominal;
+        else if (tipe === "pengeluaran") exp12[idx] += tx.nominal;
+      });
+
+      const ctxTrend = document.getElementById("chartMonthlyTrendOverview").getContext("2d");
+      if (chartInstances.monthlyTrend) chartInstances.monthlyTrend.destroy();
+
+      chartInstances.monthlyTrend = new Chart(ctxTrend, {
+        type: "bar",
+        data: {
+          labels: labels12,
+          datasets: [
+            { label: "Pemasukan", data: inc12, backgroundColor: "#059669", borderRadius: 5 },
+            { label: "Pengeluaran", data: exp12, backgroundColor: "#f43f5e", borderRadius: 5 }
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: "top", labels: { usePointStyle: true, font: { family: "Inter", size: 12 } } },
+            legend: { position: "bottom", labels: { usePointStyle: true, font: { family: "Inter", size: 12, weight: "600" } } },
             tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatRp(ctx.raw)}` } }
           },
           scales: {
-            x: { stacked: true, grid: { display: false } },
-            y: { stacked: true, grid: { color: "#f1f5f9" }, ticks: { callback: (v) => formatShortRp(v) } }
+            x: { grid: { display: false } },
+            y: { grid: { color: "#f1f5f9" }, ticks: { callback: (v) => formatShortRp(v) } }
           }
         }
       });
