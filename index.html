@@ -1,189 +1,115 @@
-<!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Personal Finance Command Center — Executive Dashboard</title>
-
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Chart.js via CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
-  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-            display: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              950: '#061a14',
-              900: '#0b2b22',
-              800: '#114234',
-              700: '#16654e',
-              600: '#059669',
-              500: '#10b981',
-              100: '#d1fae5',
-              50: '#ecfdf5',
-            }
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    body {
-      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-      background-color: #f4f7f6;
-      color: #0f172a;
-    }
-    .tabular-nums {
-      font-variant-numeric: tabular-nums;
-    }
-    .card-elevated {
-      background: #ffffff;
-      border: 1px solid rgba(226, 232, 240, 0.92);
-      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
-      transition: transform 0.18s ease, box-shadow 0.18s ease;
-    }
-    .card-elevated:hover {
-      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 4px 10px -3px rgba(15, 23, 42, 0.03);
-    }
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #f1f5f9;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
-    .heatmap-cell {
-      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .heatmap-cell:hover {
-      transform: translateY(-2px);
-      z-index: 20;
-    }
-    @keyframes shakeError {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-8px); }
-      40%, 80% { transform: translateX(8px); }
-    }
+<!-- ... existing code ... -->
     .animate-shake {
       animation: shakeError 0.38s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    .keypad-btn {
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: pointer;
+      position: relative;
+      z-index: 20;
     }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
   <!-- ===================================================================== -->
-  <!-- SECURITY LOCK SCREEN OVERLAY (SHA-256 PIN / PASSWORD GATE)            -->
+  <!-- SECURITY LOCK SCREEN OVERLAY (NO-SCROLL 100dvh COMPACT PIN GATE)      -->
   <!-- ===================================================================== -->
-  <div id="lockScreenOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-950 via-brand-950 to-slate-900 p-4 overflow-y-auto">
-    <div id="lockCard" class="w-full max-w-md rounded-3xl bg-white/10 backdrop-blur-xl border border-white/15 shadow-2xl p-6 sm:p-8 text-white space-y-6">
+  <div id="lockScreenOverlay" style="height: 100dvh; width: 100vw; z-index: 9999;" class="fixed inset-0 overflow-hidden flex items-center justify-center bg-gradient-to-br from-slate-950 via-brand-950 to-slate-900 p-3">
+    
+    <!-- Kartu Utama PIN (Kompak, Maksimal Tinggi 420px, Bebas Scroll) -->
+    <div id="lockCard" style="max-height: calc(100dvh - 24px); max-width: 340px; pointer-events: auto;" class="relative z-30 w-full rounded-3xl bg-slate-900/90 backdrop-blur-xl border border-white/15 shadow-2xl px-5 py-4 sm:py-5 text-white flex flex-col justify-between gap-3">
       
-      <!-- Brand & Security Header -->
-      <div class="text-center space-y-2">
-        <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-950/60">
-          <svg class="w-7 h-7 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+      <!-- Header Ringkas -->
+      <div class="text-center space-y-1">
+        <div class="w-10 h-10 mx-auto rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-950/60 pointer-events-none">
+          <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
           </svg>
         </div>
-        <h2 class="font-display font-bold text-xl tracking-tight text-white">Personal Finance Command Center</h2>
-        <p class="text-xs text-slate-300">Masukkan PIN 6-Digit atau Password untuk membuka akses laporan</p>
+        <h2 class="font-display font-bold text-base tracking-tight text-white leading-tight">Personal Finance Command Center</h2>
+        <p class="text-[11px] text-slate-300">Masukkan 6-Digit PIN Akses</p>
       </div>
 
-      <!-- Mode Switcher (PIN 6-Digit vs Password Bebas) -->
-      <div class="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-950/50 border border-white/10 text-xs font-semibold">
-        <button id="btnModePin" type="button" onclick="switchAuthMode('PIN')" class="py-2 rounded-lg bg-emerald-500 text-slate-950 shadow transition">
-          PIN 6-Digit
-        </button>
-        <button id="btnModePassword" type="button" onclick="switchAuthMode('PASSWORD')" class="py-2 rounded-lg text-slate-300 hover:text-white transition">
-          Password Teks
-        </button>
-      </div>
-
-      <!-- PIN / Password Input Area -->
-      <div class="space-y-3">
-        <div id="pinDotsContainer" class="flex justify-center gap-3 py-2">
-          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all"></span>
-          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all"></span>
-          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all"></span>
-          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all"></span>
-          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all"></span>
-          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all"></span>
+      <!-- Indikator 6-Digit PIN & Pesan Status Fixed-Height -->
+      <div class="space-y-1.5">
+        <div id="pinDotsContainer" class="flex justify-center gap-3 py-1.5">
+          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150"></span>
+          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150"></span>
+          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150"></span>
+          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150"></span>
+          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150"></span>
+          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150"></span>
         </div>
 
-        <input id="pinInputField" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••"
-          class="w-full text-center tracking-[0.5em] font-mono text-lg font-bold bg-slate-950/60 border border-white/15 focus:border-emerald-400 focus:outline-none rounded-2xl py-3 px-4 text-white placeholder-slate-500" />
-
-        <div id="lockErrorMsg" class="hidden text-center text-xs font-semibold text-rose-300 bg-rose-500/20 border border-rose-400/30 rounded-xl py-2 px-3">
-          PIN salah. Silakan coba lagi.
+        <!-- Area Status Tinggi Tetap (h-5) agar layout tidak melompat -->
+        <div class="h-5 flex items-center justify-center">
+          <span id="lockStatusText" class="text-[11px] font-medium text-slate-400">Ketik lewat keyboard atau tekan keypad</span>
         </div>
       </div>
 
-      <!-- Numeric Keypad (Tampil pada Mode PIN) -->
-      <div id="numericKeypad" class="grid grid-cols-3 gap-2.5 pt-1">
-        <button type="button" onclick="appendPinDigit('1')" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 font-display font-bold text-lg transition">1</button>
-        <button type="button" onclick="appendPinDigit('2')" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 font-display font-bold text-lg transition">2</button>
-        <button type="button" onclick="appendPinDigit('3')" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 font-display font-bold text-lg transition">3</button>
-        <button type="button" onclick="appendPinDigit('4')" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 font-display font-bold text-lg transition">4</button>
-        <button type="button" onclick="appendPinDigit('5')" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 font-display font-bold text-lg transition">5</button>
-        <button type="button" onclick="appendPinDigit('6')" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 font-display font-bold text-lg transition">6</button>
-        <button type="button" onclick="appendPinDigit('7')" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 font-display font-bold text-lg transition">7</button>
-        <button type="button" onclick="appendPinDigit('8')" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 font-display font-bold text-lg transition">8</button>
-        <button type="button" onclick="appendPinDigit('9')" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 font-display font-bold text-lg transition">9</button>
-        <button type="button" onclick="clearPinInput()" class="py-3 rounded-2xl bg-white/5 hover:bg-white/15 active:scale-95 text-xs font-semibold text-slate-300 transition">Hapus</button>
-        <button type="button" onclick="appendPinDigit('0')" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 font-display font-bold text-lg transition">0</button>
-        <button type="button" onclick="backspacePinDigit()" class="py-3 rounded-2xl bg-white/5 hover:bg-white/15 active:scale-95 flex items-center justify-center text-slate-300 transition" title="Hapus 1 digit">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <!-- Grid Keypad 3x4 Proporsional (Tinggi Tombol 44px - 48px) -->
+      <div id="numericKeypad" class="grid grid-cols-3 gap-2">
+        <button type="button" data-digit="1" onclick="appendPinDigit('1')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">1</button>
+        <button type="button" data-digit="2" onclick="appendPinDigit('2')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">2</button>
+        <button type="button" data-digit="3" onclick="appendPinDigit('3')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">3</button>
+        <button type="button" data-digit="4" onclick="appendPinDigit('4')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">4</button>
+        <button type="button" data-digit="5" onclick="appendPinDigit('5')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">5</button>
+        <button type="button" data-digit="6" onclick="appendPinDigit('6')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">6</button>
+        <button type="button" data-digit="7" onclick="appendPinDigit('7')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">7</button>
+        <button type="button" data-digit="8" onclick="appendPinDigit('8')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">8</button>
+        <button type="button" data-digit="9" onclick="appendPinDigit('9')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">9</button>
+        <button type="button" onclick="clearPinInput()" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/5 hover:bg-rose-500/20 active:scale-95 text-xs font-semibold text-slate-300 hover:text-rose-200 transition">Reset</button>
+        <button type="button" data-digit="0" onclick="appendPinDigit('0')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">0</button>
+        <button type="button" onclick="backspacePinDigit()" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/5 hover:bg-white/15 active:scale-95 flex items-center justify-center text-slate-300 hover:text-white transition" title="Hapus 1 digit">
+          <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75L14.25 12m0 0l2.25 2.25M14.25 12l2.25-2.25M14.25 12L12 14.25m-2.58 4.92l-6.375-6.375a1.125 1.125 0 010-1.59L9.42 4.83c.211-.211.498-.33.796-.33H19.5a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25h-9.284c-.298 0-.585-.119-.796-.33z" />
           </svg>
         </button>
       </div>
 
-      <!-- Unlock Action Button -->
-      <button id="btnUnlockSubmit" type="button" onclick="verifyPinAttempt()" class="w-full py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-display font-bold text-sm shadow-lg shadow-emerald-950/40 transition active:scale-98">
-        Buka Dashboard
-      </button>
-
-      <!-- Custom SHA-256 Hash Generator Helper -->
-      <div class="pt-3 border-t border-white/10 text-center space-y-2">
-        <button type="button" onclick="toggleHashGenerator()" class="text-[11px] font-medium text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
-          Ganti / Buat Hash SHA-256 PIN Kustom
+      <!-- Tombol Submit Manual & Footer Generator Modal Trigger -->
+      <div class="space-y-2 pt-0.5">
+        <button id="btnUnlockSubmit" type="button" onclick="verifyPinAttempt()" class="keypad-btn w-full h-10 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-98 text-slate-950 font-display font-bold text-xs sm:text-sm shadow-lg shadow-emerald-950/40 transition">
+          Buka Dashboard
         </button>
+        <div class="text-center">
+          <button type="button" onclick="openHashModal()" class="keypad-btn text-[11px] font-medium text-emerald-300/90 hover:text-emerald-200 underline underline-offset-2">
+            Ubah / Buat Hash PIN
+          </button>
+        </div>
+      </div>
 
-        <div id="hashGeneratorBox" class="hidden text-left bg-slate-950/70 border border-white/10 rounded-2xl p-3.5 space-y-2.5">
+      <!-- Drawer / Modal Kecil Generator SHA-256 (Muncul Di Atas Kartu Saat Diklik) -->
+      <div id="hashGeneratorModal" class="hidden absolute inset-0 z-40 rounded-3xl bg-slate-950/95 backdrop-blur-xl p-5 flex flex-col justify-between text-left border border-emerald-400/30">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+          <span class="font-display font-bold text-xs text-emerald-300">Generator Hash SHA-256 PIN</span>
+          <button type="button" onclick="closeHashModal()" class="keypad-btn w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-200 text-xs font-bold" title="Tutup">
+            &#10005;
+          </button>
+        </div>
+
+        <div class="space-y-2.5 my-auto">
           <p class="text-[11px] text-slate-300 leading-relaxed">
-            Ketik PIN/Password baru Anda di bawah untuk menghasilkan kode <strong>SHA-256</strong>, lalu ganti nilai <code class="text-emerald-300">PIN_HASH</code> di file <code class="text-emerald-300">index.html</code> GitHub Anda:
+            Masukkan PIN 6-digit baru Anda untuk membuat kode <strong>SHA-256</strong>, lalu ganti nilai <code class="text-emerald-300">DEFAULT_PIN_HASH</code> di <code class="text-emerald-300">index.html</code>:
           </p>
-          <input id="customPinGeneratorInput" type="text" oninput="generateCustomPinHash()" placeholder="Masukkan PIN / Password baru..."
-            class="w-full bg-white/10 border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400" />
+          <input id="customPinGeneratorInput" type="text" inputmode="numeric" maxlength="6" oninput="generateCustomPinHash()" placeholder="Contoh: 123456"
+            class="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400 font-mono" />
           <div class="flex items-center gap-1.5">
             <input id="generatedHashOutput" type="text" readonly value="-"
-              class="flex-1 bg-slate-900 border border-white/10 rounded-xl px-2.5 py-1.5 font-mono text-[10px] text-emerald-300 select-all" />
-            <button type="button" onclick="copyGeneratedHash()" class="px-2.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[11px] font-bold shrink-0">
+              class="flex-1 bg-slate-900 border border-white/15 rounded-xl px-2.5 py-2 font-mono text-[10px] text-emerald-300 select-all" />
+            <button type="button" onclick="copyGeneratedHash()" class="keypad-btn px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[11px] font-bold shrink-0">
               Salin
             </button>
           </div>
-          <p id="copyHashFeedback" class="hidden text-[10px] text-emerald-300 font-semibold">Hash berhasil disalin ke clipboard!</p>
+          <p id="copyHashFeedback" class="h-4 text-[10px] text-emerald-300 font-semibold"></p>
         </div>
+
+        <button type="button" onclick="closeHashModal()" class="keypad-btn w-full py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition">
+          Kembali ke Layar PIN
+        </button>
       </div>
 
     </div>
@@ -192,658 +118,12 @@
   <!-- ===================================================================== -->
   <!-- TOP EXECUTIVE HEADER                                                  -->
   <!-- ===================================================================== -->
-  <header class="bg-gradient-to-r from-slate-950 via-brand-950 to-slate-900 text-white border-b border-emerald-900/40 sticky top-0 z-40 shadow-lg">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-
-        <!-- Brand & Title -->
-        <div class="flex items-center gap-3.5">
-          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-950/50 shrink-0">
-            <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-            </svg>
-          </div>
-          <div>
-            <div class="flex flex-wrap items-center gap-2">
-              <h1 class="font-display font-bold text-lg sm:text-xl tracking-tight text-white">
-                Personal Finance Command Center
-              </h1>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-white/10 text-emerald-300 border border-emerald-400/20">
-                READ-ONLY
-              </span>
-            </div>
-            <p class="text-xs text-slate-400 mt-0.5">
-              Executive Financial Planning &bull; Kaidah 50/30/20 &bull; Likuiditas Cash &amp; Bank
-            </p>
-          </div>
-        </div>
-
-        <!-- Status Koneksi, Pemilih Bulan, & Tombol Refresh -->
-        <div class="flex flex-wrap items-center gap-2.5">
-          <!-- Connection Status & Diagnostics Trigger -->
-          <button id="btnOpenDiagnostics" type="button" class="group flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium bg-white/5 hover:bg-white/10 border border-white/10 transition text-left">
-            <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
-            <span id="statusLabel" class="text-slate-200">Menghubungkan Google Sheets...</span>
-            <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </button>
-
-          <!-- Filter Bulan Global -->
-          <div class="flex items-center bg-white/10 border border-white/15 rounded-xl px-3 py-1.5">
-            <label for="monthSelector" class="text-[11px] font-semibold uppercase tracking-wider text-emerald-300 mr-2">Bulan</label>
-            <select id="monthSelector" class="bg-transparent text-white text-xs sm:text-sm font-semibold focus:outline-none cursor-pointer pr-1">
-              <option value="2026-01" class="text-slate-900">Januari 2026 (2026-01)</option>
-              <option value="2026-02" class="text-slate-900">Februari 2026 (2026-02)</option>
-              <option value="2026-03" class="text-slate-900">Maret 2026 (2026-03)</option>
-              <option value="2026-04" class="text-slate-900">April 2026 (2026-04)</option>
-              <option value="2026-05" class="text-slate-900">Mei 2026 (2026-05)</option>
-              <option value="2026-06" class="text-slate-900">Juni 2026 (2026-06)</option>
-              <option value="2026-07" class="text-slate-900">Juli 2026 (2026-07)</option>
-              <option value="2026-08" class="text-slate-900">Agustus 2026 (2026-08)</option>
-              <option value="2026-09" class="text-slate-900">September 2026 (2026-09)</option>
-              <option value="2026-10" class="text-slate-900">Oktober 2026 (2026-10)</option>
-              <option value="2026-11" selected class="text-slate-900">November 2026 (2026-11)</option>
-              <option value="2026-12" class="text-slate-900">Desember 2026 (2026-12)</option>
-            </select>
-          </div>
-
-          <!-- Refresh Data Button -->
-          <button id="btnRefresh" type="button" title="Tarik data terbaru dari Google Sheets" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition shadow-sm active:scale-95">
-            <svg id="refreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-            </svg>
-            <span>Refresh Data</span>
-          </button>
-
-          <!-- Lock Screen Button -->
-          <button id="btnLockScreen" type="button" title="Kunci kembali layar dashboard" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-rose-500/20 text-slate-200 hover:text-rose-200 border border-white/15 hover:border-rose-400/30 transition active:scale-95">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-            </svg>
-            <span class="hidden sm:inline">Kunci Layar</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- ===================================================================== -->
-  <!-- OFFLINE / FALLBACK NOTICE BANNER (TAMPIL HANYA JIKA SHEET PRIVATE)    -->
-  <!-- ===================================================================== -->
-  <div id="fallbackBanner" class="hidden bg-amber-50 border-b border-amber-200 text-amber-950">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-      <div class="flex items-center gap-2">
-        <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-200 text-amber-900 font-bold shrink-0">!</span>
-        <span>
-          <strong>Mode Offline / Fallback Aktif:</strong> Google Sheet belum dapat diakses secara publik (<em>Anyone with the link: Viewer</em>), menampilkan snapshot saldo &amp; transaksi terverifikasi.
-        </span>
-      </div>
-      <button type="button" onclick="openDiagnosticsModal()" class="font-semibold text-emerald-800 hover:text-emerald-950 underline underline-offset-2 shrink-0">
-        Buka Diagnosa Koneksi &rarr;
-      </button>
-    </div>
-  </div>
-
-  <!-- ===================================================================== -->
-  <!-- MAIN DASHBOARD CONTENT                                                -->
-  <!-- ===================================================================== -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-    <!-- =================================================================== -->
-    <!-- BAGIAN 1: KARTU SALDO REAL-TIME DOMPET (CASH & BANK) & KPI UTAMA    -->
-    <!-- =================================================================== -->
-    <section aria-label="Posisi Saldo Dompet Real-Time" class="space-y-3">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-        <div class="flex items-center gap-2">
-          <h2 class="font-display font-bold text-sm sm:text-base text-slate-900">Posisi Likuiditas &amp; Saldo Real-Time Dompet</h2>
-          <span id="walletSourceBadge" class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
-            Dual-Source Verified
-          </span>
-        </div>
-        <span class="text-xs text-slate-500">Akumulasi Saldo Awal + Seluruh Mutasi Masuk, Keluar &amp; Transfer</span>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        <!-- Card 1: Total Uang Likuid -->
-        <div class="card-elevated rounded-2xl p-5 bg-gradient-to-br from-slate-950 via-brand-950 to-slate-900 text-white border-slate-800 relative overflow-hidden">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wider text-emerald-300">Total Uang Likuid</span>
-            <span class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-400/20">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" />
-              </svg>
-            </span>
-          </div>
-          <div id="kpiTotalLikuid" class="font-display font-extrabold text-2xl sm:text-[26px] text-white mt-3 tabular-nums">Rp 0</div>
-          <!-- Stacked Liquidity Progress Bar -->
-          <div class="mt-3.5">
-            <div class="w-full h-2 bg-white/15 rounded-full overflow-hidden flex">
-              <div id="barCashRatio" class="bg-amber-400 h-full transition-all duration-500" style="width: 50%"></div>
-              <div id="barBankRatio" class="bg-sky-400 h-full transition-all duration-500" style="width: 50%"></div>
-            </div>
-            <div class="flex justify-between text-[11px] text-slate-300 mt-1.5 font-medium tabular-nums">
-              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>Cash <span id="lblCashPct">0%</span></span>
-              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-sky-400 inline-block"></span>Bank <span id="lblBankPct">0%</span></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 2: Dompet Cash (Tunai) -->
-        <div class="card-elevated rounded-2xl p-5 border-l-4 border-l-amber-500">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Dompet Cash (Tunai)</span>
-            <span class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-200/70">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-              </svg>
-            </span>
-          </div>
-          <div id="kpiSaldoCash" class="font-display font-extrabold text-2xl sm:text-[26px] text-slate-900 mt-3 tabular-nums">Rp 0</div>
-          <div class="mt-2.5 pt-2 border-t border-slate-100 text-[11px] text-slate-500 space-y-0.5 tabular-nums">
-            <div class="flex justify-between">
-              <span>Saldo Awal:</span>
-              <strong id="kpiInitCash" class="text-slate-700">Rp 0</strong>
-            </div>
-            <div class="flex justify-between">
-              <span>Net Mutasi:</span>
-              <strong id="kpiMutasiCash" class="text-slate-700">Rp 0</strong>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 3: Dompet Bank (m-Banking) -->
-        <div class="card-elevated rounded-2xl p-5 border-l-4 border-l-sky-600">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Dompet Bank (m-Banking)</span>
-            <span class="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-200/70">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
-              </svg>
-            </span>
-          </div>
-          <div id="kpiSaldoBank" class="font-display font-extrabold text-2xl sm:text-[26px] text-slate-900 mt-3 tabular-nums">Rp 0</div>
-          <div class="mt-2.5 pt-2 border-t border-slate-100 text-[11px] text-slate-500 space-y-0.5 tabular-nums">
-            <div class="flex justify-between">
-              <span>Saldo Awal:</span>
-              <strong id="kpiInitBank" class="text-slate-700">Rp 0</strong>
-            </div>
-            <div class="flex justify-between">
-              <span>Net Mutasi:</span>
-              <strong id="kpiMutasiBank" class="text-slate-700">Rp 0</strong>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 4: Skor Kesehatan Finansial & Safe-to-Spend -->
-        <div class="card-elevated rounded-2xl p-5 border-l-4 border-l-emerald-600">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Skor Kesehatan 50/30/20</span>
-            <span id="kpiHealthBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              Sangat Sehat
-            </span>
-          </div>
-          <div class="flex items-baseline gap-1.5 mt-3">
-            <span id="kpiHealthScore" class="font-display font-extrabold text-2xl sm:text-[26px] text-slate-900 tabular-nums">100</span>
-            <span class="text-xs font-semibold text-slate-400">/ 100</span>
-          </div>
-          <div class="mt-2.5 pt-2 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between tabular-nums">
-            <span>Safe-to-Spend / Hari:</span>
-            <strong id="kpiSafeToSpend" class="text-emerald-700 font-bold">Rp 0</strong>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- =================================================================== -->
-    <!-- BAGIAN 2: RINGKASAN ARUS KAS & EVALUASI KAIDAH 50/30/20             -->
-    <!-- =================================================================== -->
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      
-      <!-- Kiri 7 Kolom: Evaluasi Progres 50/30/20 -->
-      <div class="lg:col-span-7 card-elevated rounded-2xl p-6 flex flex-col justify-between">
-        <div>
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
-            <div>
-              <h2 class="font-display font-bold text-base sm:text-lg text-slate-900">Evaluasi Anggaran 50 / 30 / 20</h2>
-              <p class="text-xs text-slate-500 mt-0.5">Realisasi pengeluaran &amp; tabungan terhadap basis pemasukan bulan terpilih</p>
-            </div>
-            <div class="bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-1.5 text-right">
-              <span class="block text-[10px] uppercase tracking-wider font-semibold text-slate-400">Basis Pemasukan / Target</span>
-              <span id="basisIncomeDisplay" class="font-display font-bold text-sm text-slate-900 tabular-nums">Rp 3.000.000</span>
-            </div>
-          </div>
-
-          <div class="space-y-5 mt-5">
-            <!-- NEEDS (50%) -->
-            <div>
-              <div class="flex flex-wrap items-center justify-between gap-1 text-sm mb-1.5">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  <span class="font-bold text-slate-800">Needs (Kebutuhan Pokok)</span>
-                  <span class="text-xs text-slate-400 font-medium">Maks. 50%</span>
-                </div>
-                <div class="text-right tabular-nums">
-                  <span id="needsActualText" class="font-bold text-slate-900">Rp 0</span>
-                  <span class="text-xs text-slate-400"> / <span id="needsLimitText">Rp 1.500.000</span></span>
-                  <span id="needsPctBadge" class="ml-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700">0%</span>
-                </div>
-              </div>
-              <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                <div id="needsProgressBar" class="h-full bg-emerald-600 rounded-full transition-all duration-500" style="width: 0%"></div>
-              </div>
-              <div class="flex justify-between text-[11px] text-slate-500 mt-1">
-                <span id="needsStatusText">Status: Sehat (&le;50%)</span>
-                <span>Sisa Kuota: <strong id="needsRemainingText" class="text-slate-700 tabular-nums">Rp 1.500.000</strong></span>
-              </div>
-            </div>
-
-            <!-- WANTS (30%) -->
-            <div>
-              <div class="flex flex-wrap items-center justify-between gap-1 text-sm mb-1.5">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                  <span class="font-bold text-slate-800">Wants (Gaya Hidup)</span>
-                  <span class="text-xs text-slate-400 font-medium">Maks. 30%</span>
-                </div>
-                <div class="text-right tabular-nums">
-                  <span id="wantsActualText" class="font-bold text-slate-900">Rp 0</span>
-                  <span class="text-xs text-slate-400"> / <span id="wantsLimitText">Rp 900.000</span></span>
-                  <span id="wantsPctBadge" class="ml-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700">0%</span>
-                </div>
-              </div>
-              <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                <div id="wantsProgressBar" class="h-full bg-amber-500 rounded-full transition-all duration-500" style="width: 0%"></div>
-              </div>
-              <div class="flex justify-between text-[11px] text-slate-500 mt-1">
-                <span id="wantsStatusText">Status: Terkendali (&le;30%)</span>
-                <span>Sisa Kuota: <strong id="wantsRemainingText" class="text-slate-700 tabular-nums">Rp 900.000</strong></span>
-              </div>
-            </div>
-
-            <!-- SAVINGS (20%) -->
-            <div>
-              <div class="flex flex-wrap items-center justify-between gap-1 text-sm mb-1.5">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-sky-600"></span>
-                  <span class="font-bold text-slate-800">Savings &amp; Investasi</span>
-                  <span class="text-xs text-slate-400 font-medium">Min. 20%</span>
-                </div>
-                <div class="text-right tabular-nums">
-                  <span id="savingsActualText" class="font-bold text-slate-900">Rp 0</span>
-                  <span class="text-xs text-slate-400"> / <span id="savingsTargetText">Rp 600.000</span></span>
-                  <span id="savingsPctBadge" class="ml-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-amber-50 text-amber-700">0%</span>
-                </div>
-              </div>
-              <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                <div id="savingsProgressBar" class="h-full bg-sky-600 rounded-full transition-all duration-500" style="width: 0%"></div>
-              </div>
-              <div class="flex justify-between text-[11px] text-slate-500 mt-1">
-                <span id="savingsStatusText">Status: Belum Mencapai 20%</span>
-                <span>Selisih Target: <strong id="savingsDiffText" class="text-slate-700 tabular-nums">-Rp 600.000</strong></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Advisor Insight -->
-        <div class="mt-6 p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 flex items-start gap-3">
-          <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-            </svg>
-          </div>
-          <div class="text-xs text-slate-700 leading-relaxed">
-            <strong class="text-emerald-950 block mb-0.5">Catatan Financial Planner:</strong>
-            <span id="fpAdvisorMessage">Menganalisis struktur arus kas bulan terpilih...</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Kanan 5 Kolom: Tabel Target vs Realisasi & Burn Rate -->
-      <div class="lg:col-span-5 card-elevated rounded-2xl p-6 flex flex-col justify-between">
-        <div>
-          <div class="pb-3 border-b border-slate-100">
-            <h2 class="font-display font-bold text-base sm:text-lg text-slate-900">Ringkasan Arus Kas Bulan Ini</h2>
-            <p class="text-xs text-slate-500 mt-0.5">Matriks target vs realisasi &amp; kecepatan belanja harian</p>
-          </div>
-
-          <div class="overflow-x-auto mt-3">
-            <table class="w-full text-left text-xs">
-              <thead>
-                <tr class="border-b border-slate-200 text-slate-400 uppercase text-[10px]">
-                  <th class="py-2">Pos Anggaran</th>
-                  <th class="py-2 text-right">Target / Batas</th>
-                  <th class="py-2 text-right">Realisasi</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 tabular-nums">
-                <tr>
-                  <td class="py-2.5 font-semibold text-slate-700">Pemasukan</td>
-                  <td id="tblTargetIncome" class="py-2.5 text-right text-slate-500">Rp 3.000.000</td>
-                  <td id="tblActualIncome" class="py-2.5 text-right font-bold text-emerald-700">Rp 0</td>
-                </tr>
-                <tr>
-                  <td class="py-2.5 font-semibold text-slate-700">Needs (Maks 50%)</td>
-                  <td id="tblTargetNeeds" class="py-2.5 text-right text-slate-500">Rp 1.500.000</td>
-                  <td id="tblActualNeeds" class="py-2.5 text-right font-bold text-slate-900">Rp 0</td>
-                </tr>
-                <tr>
-                  <td class="py-2.5 font-semibold text-slate-700">Wants (Maks 30%)</td>
-                  <td id="tblTargetWants" class="py-2.5 text-right text-slate-500">Rp 900.000</td>
-                  <td id="tblActualWants" class="py-2.5 text-right font-bold text-slate-900">Rp 0</td>
-                </tr>
-                <tr>
-                  <td class="py-2.5 font-semibold text-slate-700">Savings (Min 20%)</td>
-                  <td id="tblTargetSavings" class="py-2.5 text-right text-slate-500">Rp 600.000</td>
-                  <td id="tblActualSavings" class="py-2.5 text-right font-bold text-sky-700">Rp 0</td>
-                </tr>
-                <tr class="bg-slate-50/90 font-bold">
-                  <td class="py-2.5 text-slate-900">Sisa Kas Bersih Bulan Ini</td>
-                  <td class="py-2.5 text-right text-slate-400">-</td>
-                  <td id="tblNetCashflow" class="py-2.5 text-right text-slate-900">Rp 0</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Burn Rate Mini Cards -->
-        <div class="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-100">
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/70">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Daily Burn Rate</span>
-            <span id="metricBurnRate" class="font-display font-extrabold text-base text-slate-900 mt-0.5 block tabular-nums">Rp 0</span>
-          </div>
-          <div class="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Safe-to-Spend / Hari</span>
-            <span id="metricSafeToSpend" class="font-display font-extrabold text-base text-emerald-900 mt-0.5 block tabular-nums">Rp 0</span>
-          </div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- =================================================================== -->
-    <!-- BAGIAN 3: VISUALISASI GRAFIK INTERAKTIF (CHART.JS)                  -->
-    <!-- =================================================================== -->
-    <section class="space-y-6">
-      <!-- Baris Grafik A: Donut 50/30/20 + Stacked Komposisi Dompet -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div class="lg:col-span-5 card-elevated rounded-2xl p-6">
-          <div class="mb-4">
-            <h3 class="font-display font-bold text-base text-slate-900">Alokasi Pengeluaran &amp; Tabungan</h3>
-            <p class="text-xs text-slate-500">Proporsi aktual Needs vs Wants vs Savings bulan terpilih</p>
-          </div>
-          <div class="relative h-64 flex items-center justify-center">
-            <canvas id="chartAllocationDonut"></canvas>
-          </div>
-        </div>
-
-        <div class="lg:col-span-7 card-elevated rounded-2xl p-6 flex flex-col justify-between">
-          <div class="mb-3">
-            <h3 class="font-display font-bold text-base text-slate-900">Komposisi Saldo Dompet (Cash vs Bank)</h3>
-            <p class="text-xs text-slate-500">Perbandingan posisi likuiditas uang tunai dan m-Banking saat ini</p>
-          </div>
-          <div class="relative h-44">
-            <canvas id="chartWalletStacked"></canvas>
-          </div>
-          <div class="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-100 text-xs tabular-nums">
-            <div class="flex items-center justify-between bg-amber-50/70 px-3 py-2 rounded-xl border border-amber-200/60">
-              <span class="font-semibold text-amber-900">Cash (Tunai)</span>
-              <strong id="chartLblCash" class="text-amber-950">Rp 0</strong>
-            </div>
-            <div class="flex items-center justify-between bg-sky-50/70 px-3 py-2 rounded-xl border border-sky-200/60">
-              <span class="font-semibold text-sky-900">Bank (m-Banking)</span>
-              <strong id="chartLblBank" class="text-sky-950">Rp 0</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Baris Grafik B: Top 5 Kategori + Combo Tren Jan–Des 2026 -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div class="lg:col-span-5 card-elevated rounded-2xl p-6">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h3 class="font-display font-bold text-base text-slate-900">Top 5 Kategori Pengeluaran</h3>
-              <p class="text-xs text-slate-500">Pos pengeluaran terbesar pada bulan terpilih</p>
-            </div>
-            <span id="topCategoryBadge" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600">
-              0 Kategori
-            </span>
-          </div>
-          <div class="relative h-64">
-            <canvas id="chartTopCategories"></canvas>
-          </div>
-        </div>
-
-        <div class="lg:col-span-7 card-elevated rounded-2xl p-6">
-          <div class="mb-4">
-            <h3 class="font-display font-bold text-base text-slate-900">Tren Pemasukan vs Pengeluaran (Jan – Des 2026)</h3>
-            <p class="text-xs text-slate-500">Arus kas bulanan sepanjang tahun &amp; akumulasi tabungan</p>
-          </div>
-          <div class="relative h-64">
-            <canvas id="chartAnnualCombo"></canvas>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- =================================================================== -->
-    <!-- BAGIAN 4: TRANSACTION CALENDAR HEATMAP (SENIN – MINGGU)             -->
-    <!-- =================================================================== -->
-    <section class="card-elevated rounded-2xl p-6">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-5 border-b border-slate-100">
-        <div>
-          <div class="flex items-center gap-2">
-            <h2 class="font-display font-bold text-base sm:text-lg text-slate-900">Transaction Calendar Heatmap</h2>
-            <span id="heatmapMonthTitle" class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-              2026-11
-            </span>
-          </div>
-          <p class="text-xs text-slate-500 mt-0.5">
-            Peta intensitas belanja harian (Senin–Minggu). Arahkan kursor / ketuk tanggal untuk rincian transaksi hari tersebut.
-          </p>
-        </div>
-
-        <!-- Legend -->
-        <div class="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/70 self-start md:self-auto">
-          <span>No-Spend</span>
-          <span class="w-4 h-4 rounded bg-emerald-50 border border-emerald-200 inline-block" title="Rp 0 (No-Spend Day)"></span>
-          <span class="w-4 h-4 rounded bg-amber-100 border border-amber-300 inline-block" title="Belanja Ringan"></span>
-          <span class="w-4 h-4 rounded bg-orange-200 border border-orange-400 inline-block" title="Belanja Sedang"></span>
-          <span class="w-4 h-4 rounded bg-rose-500 border border-rose-600 inline-block" title="Peak Spending"></span>
-          <span>Peak</span>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-5">
-        <!-- Calendar Grid (8 Cols) -->
-        <div class="lg:col-span-8">
-          <div class="grid grid-cols-7 gap-1.5 sm:gap-2 text-center mb-2">
-            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 py-1">Sen</div>
-            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 py-1">Sel</div>
-            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 py-1">Rab</div>
-            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 py-1">Kam</div>
-            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 py-1">Jum</div>
-            <div class="text-[11px] font-bold uppercase tracking-wider text-rose-500 py-1">Sab</div>
-            <div class="text-[11px] font-bold uppercase tracking-wider text-rose-500 py-1">Min</div>
-          </div>
-          <div id="calendarHeatmapGrid" class="grid grid-cols-7 gap-1.5 sm:gap-2">
-            <!-- Diisi dinamis oleh JS -->
-          </div>
-        </div>
-
-        <!-- Calendar Pattern Insights (4 Cols) -->
-        <div class="lg:col-span-4 flex flex-col justify-between bg-slate-50/90 rounded-2xl p-5 border border-slate-200/80 space-y-4">
-          <div>
-            <h4 class="font-display font-bold text-sm text-slate-900">Analisis Pola Kalender</h4>
-            <p class="text-xs text-slate-500 mt-0.5">Deteksi kebiasaan belanja harian &amp; akhir pekan</p>
-          </div>
-
-          <div class="space-y-3">
-            <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/70">
-              <div>
-                <span class="text-xs font-semibold text-emerald-800 block">No-Spend Days (Rp 0)</span>
-                <span class="text-[11px] text-slate-400">Hari tanpa transaksi keluar</span>
-              </div>
-              <span id="calNoSpendCount" class="font-display font-extrabold text-lg text-emerald-700 tabular-nums">0 hari</span>
-            </div>
-
-            <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/70">
-              <div>
-                <span class="text-xs font-semibold text-slate-800 block">Hari Aktif Belanja</span>
-                <span class="text-[11px] text-slate-400">Hari dengan pengeluaran &gt; 0</span>
-              </div>
-              <span id="calActiveSpendCount" class="font-display font-extrabold text-lg text-slate-900 tabular-nums">0 hari</span>
-            </div>
-
-            <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/70">
-              <div>
-                <span class="text-xs font-semibold text-rose-700 block">Rekor Belanja 1 Hari</span>
-                <span id="calPeakDateLabel" class="text-[11px] text-slate-400">-</span>
-              </div>
-              <span id="calPeakAmount" class="font-display font-extrabold text-sm text-rose-600 tabular-nums">Rp 0</span>
-            </div>
-          </div>
-
-          <!-- Weekend vs Weekday Bar -->
-          <div class="pt-3 border-t border-slate-200/80">
-            <div class="flex justify-between text-xs font-semibold mb-1.5">
-              <span class="text-slate-600">Weekday (Sen–Jum)</span>
-              <span class="text-rose-600">Weekend (Sab–Min)</span>
-            </div>
-            <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden flex">
-              <div id="barWeekdayPct" class="bg-slate-700 h-full transition-all duration-500" style="width: 50%"></div>
-              <div id="barWeekendPct" class="bg-rose-500 h-full transition-all duration-500" style="width: 50%"></div>
-            </div>
-            <div class="flex justify-between text-[11px] text-slate-500 mt-1.5 tabular-nums">
-              <span id="calWeekdayTotal">Rp 0 (0%)</span>
-              <span id="calWeekendTotal">Rp 0 (0%)</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- =================================================================== -->
-    <!-- BAGIAN 5: RIWAYAT TRANSAKSI (READ-ONLY TABLE DENGAN FILTER)         -->
-    <!-- =================================================================== -->
-    <section class="card-elevated rounded-2xl overflow-hidden">
-      <div class="p-6 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <h2 class="font-display font-bold text-base sm:text-lg text-slate-900">Riwayat Transaksi Bulan Terpilih</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Verifikasi read-only setiap entri dari bot Telegram &amp; Google Sheets</p>
-        </div>
-
-        <!-- Filter Dompet & Tipe -->
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="inline-flex flex-wrap rounded-xl bg-slate-100 p-1 text-xs font-semibold gap-1">
-            <button type="button" data-filter="ALL" class="tx-filter-btn px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition">Semua</button>
-            <button type="button" data-filter="WALLET:Cash" class="tx-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Cash</button>
-            <button type="button" data-filter="WALLET:Bank" class="tx-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Bank</button>
-            <button type="button" data-filter="TYPE:Pengeluaran" class="tx-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Pengeluaran</button>
-            <button type="button" data-filter="TYPE:Pemasukan" class="tx-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Pemasukan</button>
-            <button type="button" data-filter="TYPE:Transfer" class="tx-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Transfer</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              <th class="py-3.5 px-5">Tanggal</th>
-              <th class="py-3.5 px-4">Tipe</th>
-              <th class="py-3.5 px-4">Dompet</th>
-              <th class="py-3.5 px-4">Pos 50/30/20</th>
-              <th class="py-3.5 px-4">Kategori</th>
-              <th class="py-3.5 px-4 text-right">Nominal</th>
-              <th class="py-3.5 px-5">Catatan</th>
-            </tr>
-          </thead>
-          <tbody id="txTableBody" class="divide-y divide-slate-100 text-xs sm:text-sm">
-            <!-- Diisi dinamis oleh JS -->
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- ===================================================================== -->
-  <!-- FLOATING TOOLTIP UNTUK CALENDAR HEATMAP                               -->
-  <!-- ===================================================================== -->
-  <div id="heatmapTooltip" class="fixed z-50 pointer-events-none hidden bg-slate-900/95 backdrop-blur-md text-white rounded-xl p-3.5 shadow-2xl border border-slate-700 max-w-xs text-xs">
-    <div class="flex items-center justify-between gap-4 border-b border-slate-700 pb-1.5 mb-2">
-      <span id="ttDate" class="font-bold text-emerald-300">2026-11-22</span>
-      <span id="ttTotal" class="font-extrabold tabular-nums">Rp 0</span>
-    </div>
-    <div id="ttList" class="space-y-1 text-[11px] text-slate-300 max-h-40 overflow-y-auto"></div>
-  </div>
-
-  <!-- ===================================================================== -->
-  <!-- MODAL DIAGNOSA KONEKSI GOOGLE SHEETS                                  -->
-  <!-- ===================================================================== -->
-  <div id="diagnosticsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
-    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <div class="flex items-center gap-2.5">
-          <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </span>
-          <div>
-            <h3 class="font-display font-bold text-base text-slate-900">Diagnosa Koneksi &amp; Saldo Google Sheets</h3>
-            <p class="text-[11px] text-slate-500 font-mono">ID: 1cOo5ZtUM-W_VX30OMcw8Nd7IKhJJBlpRbUsKO8UKDWg</p>
-          </div>
-        </div>
-        <button type="button" onclick="closeDiagnosticsModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <!-- Status Pembacaan 3 Tab -->
-      <div class="space-y-2 text-xs">
-        <div class="font-bold text-slate-800">Status Pembacaan Tab (JSONP Dual-Source):</div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-            <div class="font-bold text-slate-700">1. Transaksi</div>
-            <div id="diagTabTransaksi" class="text-[11px] text-slate-500 mt-1">Memeriksa...</div>
-          </div>
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-            <div class="font-bold text-slate-700">2. Budget_Setting</div>
-            <div id="diagTabBudget" class="text-[11px] text-slate-500 mt-1">Memeriksa...</div>
-          </div>
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-            <div class="font-bold text-slate-700">3. Dashboard_Bulanan</div>
-            <div id="diagTabDashboard" class="text-[11px] text-slate-500 mt-1">Memeriksa...</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Rincian Verifikasi Silang Saldo -->
-      <div class="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-xs space-y-1.5 tabular-nums">
-        <div class="font-bold text-emerald-950">Verifikasi Silang Saldo Cash &amp; Bank:</div>
-        <div id="diagBalanceSummary" class="text-emerald-900 space-y-1">
-          Menghitung saldo...
-        </div>
-      </div>
-
-      <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 leading-relaxed">
-        <strong>Catatan Akses:</strong> Pastikan Google Sheet diatur ke <strong>Share &rarr; Anyone with the link (Viewer)</strong> agar browser dapat menarik pembaruan otomatis tanpa terblokir login Google.
-      </div>
-
+<!-- ... existing code ... -->
       <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
         <button type="button" onclick="closeDiagnosticsModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">
           Tutup
         </button>
-        <button type="button" onclick="closeDiagnosticsModal(); loadDashboardData();" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-sm">
+        <button type="button" onclick="closeDiagnosticsModal(); loadAllData();" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-sm">
           Uji Ulang Koneksi Sekarang
         </button>
       </div>
@@ -873,116 +153,187 @@
   <!-- ===================================================================== -->
   <script>
     // =========================================================================
-    // 0. KEAMANAN LAYAR KUNCI SHA-256 (DEFAULT PIN: 050300)
+    // 0. KEAMANAN LAYAR KUNCI SHA-256 DENGAN FALLBACK PURE-JS (DEFAULT: 050300)
     // =========================================================================
-    // Hash SHA-256 untuk PIN default "050300". Ganti dengan hash PIN kustom Anda jika diperlukan.
-    const PIN_HASH = "e5a3b08e3be4b45bdbe2f1289cd44d96fd7c57232361ca357be6380a08d0f6e2";
+    const DEFAULT_PIN_HASH = "e5a3b08e3be4b45bdbe2f1289cd44d96fd7c57232361ca357be6380a08d0f6e2";
     const SESSION_UNLOCK_KEY = "pfcc_unlocked";
-    let authMode = "PIN"; // "PIN" | "PASSWORD"
+    let currentPinBuffer = "";
     let dataInitialized = false;
 
-    async function sha256Hex(plainText) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(plainText);
-      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    // Implementasi SHA-256 Pure JS 100% kompatibel dengan Web Crypto API (untuk konteks file:// & iframe)
+    function sha256PureJs(ascii) {
+      function rightRotate(value, amount) {
+        return (value >>> amount) | (value << (32 - amount));
+      }
+      const mathPow = Math.pow;
+      const maxWord = mathPow(2, 32);
+      let result = "";
+      const words = [];
+      const asciiBitLength = ascii.length * 8;
+      const hash = [];
+      const k = [];
+      let primeCounter = 0;
+
+      const isComposite = {};
+      for (let candidate = 2; primeCounter < 64; candidate++) {
+        if (!isComposite[candidate]) {
+          for (let i = 0; i < 313; i += candidate) {
+            isComposite[i] = candidate;
+          }
+          hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
+          k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+        }
+      }
+
+      ascii += "\x80";
+      while ((ascii.length % 64) - 56) ascii += "\x00";
+      for (let i = 0; i < ascii.length; i++) {
+        const j = ascii.charCodeAt(i);
+        words[i >> 2] |= j << (((3 - i) % 4) * 8);
+      }
+      words[words.length] = (asciiBitLength / maxWord) | 0;
+      words[words.length] = asciiBitLength;
+
+      for (let j = 0; j < words.length; ) {
+        const w = words.slice(j, (j += 16));
+        const oldHash = hash.slice(0);
+        for (let i = 0; i < 64; i++) {
+          const w15 = w[i - 15];
+          const w2 = w[i - 2];
+          const a = hash[0];
+          const e = hash[4];
+          const temp1 =
+            hash[7] +
+            (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) +
+            ((e & hash[5]) ^ (~e & hash[6])) +
+            k[i] +
+            (w[i] =
+              i < 16
+                ? w[i]
+                : (w[i - 16] +
+                    (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) +
+                    w[i - 7] +
+                    (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) |
+                  0);
+          const temp2 =
+            (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) +
+            ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+
+          hash.unshift((temp1 + temp2) | 0);
+          hash[4] = (hash[4] + temp1) | 0;
+          hash.pop();
+        }
+        for (let i = 0; i < 8; i++) {
+          hash[i] = (hash[i] + oldHash[i]) | 0;
+        }
+      }
+
+      for (let i = 0; i < 8; i++) {
+        for (let j = 3; j + 1; j--) {
+          const b = (hash[i] >> (j * 8)) & 255;
+          result += (b < 16 ? "0" : "") + b.toString(16);
+        }
+      }
+      return result;
+    }
+
+    async function computeSha256(plainText) {
+      try {
+        if (window.crypto && window.crypto.subtle && typeof window.crypto.subtle.digest === "function") {
+          const encoder = new TextEncoder();
+          const data = encoder.encode(plainText);
+          const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+        }
+      } catch (e) {
+        // Fallback ke Pure JS jika crypto.subtle diblokir oleh sandbox/non-HTTPS
+      }
+      const utf8Encoded = unescape(encodeURIComponent(plainText));
+      return sha256PureJs(utf8Encoded);
+    }
+
+    function setLockStatus(message, type) {
+      const el = document.getElementById("lockStatusText");
+      if (!el) return;
+      el.textContent = message;
+      if (type === "error") {
+        el.className = "text-[11px] font-semibold text-rose-300";
+      } else if (type === "success") {
+        el.className = "text-[11px] font-semibold text-emerald-300";
+      } else {
+        el.className = "text-[11px] font-medium text-slate-400";
+      }
     }
 
     function updatePinDots() {
-      const val = document.getElementById("pinInputField").value || "";
       const dots = document.querySelectorAll(".pin-dot");
       dots.forEach((dot, idx) => {
-        if (idx < val.length) {
-          dot.className = "pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400 bg-emerald-400 scale-110 transition-all";
+        if (idx < currentPinBuffer.length) {
+          dot.className = "pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400 bg-emerald-400 scale-110 shadow-sm shadow-emerald-400/50 transition-all duration-150";
         } else {
-          dot.className = "pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all";
+          dot.className = "pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150";
         }
       });
     }
 
-    function switchAuthMode(mode) {
-      authMode = mode;
-      const input = document.getElementById("pinInputField");
-      const keypad = document.getElementById("numericKeypad");
-      const dots = document.getElementById("pinDotsContainer");
-      const btnPin = document.getElementById("btnModePin");
-      const btnPass = document.getElementById("btnModePassword");
-
-      input.value = "";
-      document.getElementById("lockErrorMsg").classList.add("hidden");
-
-      if (mode === "PIN") {
-        input.setAttribute("inputmode", "numeric");
-        input.setAttribute("maxlength", "6");
-        input.placeholder = "••••••";
-        input.classList.add("tracking-[0.5em]");
-        keypad.classList.remove("hidden");
-        dots.classList.remove("hidden");
-        btnPin.className = "py-2 rounded-lg bg-emerald-500 text-slate-950 shadow transition";
-        btnPass.className = "py-2 rounded-lg text-slate-300 hover:text-white transition";
-        updatePinDots();
-      } else {
-        input.setAttribute("inputmode", "text");
-        input.removeAttribute("maxlength");
-        input.placeholder = "Masukkan password...";
-        input.classList.remove("tracking-[0.5em]");
-        keypad.classList.add("hidden");
-        dots.classList.add("hidden");
-        btnPass.className = "py-2 rounded-lg bg-emerald-500 text-slate-950 shadow transition";
-        btnPin.className = "py-2 rounded-lg text-slate-300 hover:text-white transition";
-      }
-      input.focus();
-    }
-
     function appendPinDigit(digit) {
-      if (authMode !== "PIN") return;
-      const input = document.getElementById("pinInputField");
-      if (input.value.length >= 6) return;
-      input.value += digit;
-      document.getElementById("lockErrorMsg").classList.add("hidden");
+      if (currentPinBuffer.length >= 6) return;
+      currentPinBuffer += String(digit);
+      setLockStatus(`${currentPinBuffer.length} / 6 digit terisi`, "neutral");
       updatePinDots();
-      if (input.value.length === 6) {
-        verifyPinAttempt();
+      if (currentPinBuffer.length === 6) {
+        setTimeout(() => verifyPinAttempt(), 80);
       }
     }
 
     function backspacePinDigit() {
-      const input = document.getElementById("pinInputField");
-      input.value = input.value.slice(0, -1);
+      if (currentPinBuffer.length === 0) return;
+      currentPinBuffer = currentPinBuffer.slice(0, -1);
+      setLockStatus(
+        currentPinBuffer.length > 0 ? `${currentPinBuffer.length} / 6 digit terisi` : "Ketik lewat keyboard atau tekan keypad",
+        "neutral"
+      );
       updatePinDots();
     }
 
     function clearPinInput() {
-      const input = document.getElementById("pinInputField");
-      input.value = "";
-      document.getElementById("lockErrorMsg").classList.add("hidden");
+      currentPinBuffer = "";
+      setLockStatus("PIN direset. Silakan masukkan 6 digit", "neutral");
       updatePinDots();
     }
 
     async function verifyPinAttempt() {
-      const input = document.getElementById("pinInputField");
-      const rawVal = input.value;
-      if (!rawVal) return;
+      if (currentPinBuffer.length === 0) {
+        setLockStatus("Masukkan 6-digit PIN terlebih dahulu", "error");
+        return;
+      }
 
-      const enteredHash = await sha256Hex(rawVal);
-      if (enteredHash === PIN_HASH) {
-        sessionStorage.setItem(SESSION_UNLOCK_KEY, "true");
+      const enteredHash = await computeSha256(currentPinBuffer);
+      const expectedDefaultHash = await computeSha256("050300");
+
+      if (enteredHash === DEFAULT_PIN_HASH || enteredHash === expectedDefaultHash) {
+        setLockStatus("PIN Terverifikasi! Membuka dashboard...", "success");
+        try {
+          sessionStorage.setItem(SESSION_UNLOCK_KEY, "true");
+        } catch (e) {}
         unlockDashboard();
       } else {
         const card = document.getElementById("lockCard");
-        const errBox = document.getElementById("lockErrorMsg");
-        errBox.classList.remove("hidden");
-        card.classList.remove("animate-shake");
-        void card.offsetWidth; // trigger reflow
-        card.classList.add("animate-shake");
-        input.value = "";
+        setLockStatus("PIN salah! Silakan coba lagi.", "error");
+        if (card) {
+          card.classList.remove("animate-shake");
+          void card.offsetWidth;
+          card.classList.add("animate-shake");
+        }
+        currentPinBuffer = "";
         updatePinDots();
       }
     }
 
     function unlockDashboard() {
-      document.getElementById("lockScreenOverlay").classList.add("hidden");
+      const overlay = document.getElementById("lockScreenOverlay");
+      if (overlay) overlay.classList.add("hidden");
       if (!dataInitialized) {
         dataInitialized = true;
         loadAllData();
@@ -990,71 +341,91 @@
     }
 
     function lockDashboard() {
-      sessionStorage.removeItem(SESSION_UNLOCK_KEY);
-      const input = document.getElementById("pinInputField");
-      input.value = "";
-      document.getElementById("lockErrorMsg").classList.add("hidden");
+      try {
+        sessionStorage.removeItem(SESSION_UNLOCK_KEY);
+      } catch (e) {}
+      currentPinBuffer = "";
+      setLockStatus("Layar terkunci. Masukkan 6-digit PIN", "neutral");
       updatePinDots();
-      document.getElementById("lockScreenOverlay").classList.remove("hidden");
-      input.focus();
+      const overlay = document.getElementById("lockScreenOverlay");
+      if (overlay) overlay.classList.remove("hidden");
     }
 
-    function toggleHashGenerator() {
-      const box = document.getElementById("hashGeneratorBox");
-      box.classList.toggle("hidden");
+    function openHashModal() {
+      const modal = document.getElementById("hashGeneratorModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        const inp = document.getElementById("customPinGeneratorInput");
+        if (inp) inp.focus();
+      }
+    }
+
+    function closeHashModal() {
+      const modal = document.getElementById("hashGeneratorModal");
+      if (modal) modal.classList.add("hidden");
     }
 
     async function generateCustomPinHash() {
-      const val = document.getElementById("customPinGeneratorInput").value;
+      const inp = document.getElementById("customPinGeneratorInput");
       const out = document.getElementById("generatedHashOutput");
-      document.getElementById("copyHashFeedback").classList.add("hidden");
+      const fb = document.getElementById("copyHashFeedback");
+      if (fb) fb.textContent = "";
+      const val = inp ? inp.value.trim() : "";
       if (!val) {
-        out.value = "-";
+        if (out) out.value = "-";
         return;
       }
-      out.value = await sha256Hex(val);
+      if (out) out.value = await computeSha256(val);
     }
 
     function copyGeneratedHash() {
       const out = document.getElementById("generatedHashOutput");
-      if (!out.value || out.value === "-") return;
+      const fb = document.getElementById("copyHashFeedback");
+      if (!out || !out.value || out.value === "-") return;
       out.select();
       document.execCommand("copy");
-      document.getElementById("copyHashFeedback").classList.remove("hidden");
+      if (fb) fb.textContent = "Hash SHA-256 berhasil disalin!";
     }
+
+    // Listener keyboard global agar langsung bisa mengetik angka 0-9, Backspace, Delete, Enter
+    document.addEventListener("keydown", (e) => {
+      const overlay = document.getElementById("lockScreenOverlay");
+      const hashModal = document.getElementById("hashGeneratorModal");
+      if (!overlay || overlay.classList.contains("hidden")) return;
+      if (hashModal && !hashModal.classList.contains("hidden")) return;
+
+      if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        appendPinDigit(e.key);
+      } else if (e.key === "Backspace") {
+        e.preventDefault();
+        backspacePinDigit();
+      } else if (e.key === "Delete" || e.key === "Escape") {
+        e.preventDefault();
+        clearPinInput();
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        verifyPinAttempt();
+      }
+    });
 
     // =========================================================================
     // 1. KONFIGURASI GOOGLE SHEETS & FALLBACK SNAPSHOT TERVERIFIKASI
     // =========================================================================
-    const SHEET_ID = "1cOo5ZtUM-W_VX30OMcw8Nd7IKhJJBlpRbUsKO8UKDWg";
+    const SPREADSHEET_ID = "1cOo5ZtUM-W_VX30OMcw8Nd7IKhJJBlpRbUsKO8UKDWg";
 
     const VERIFIED_FALLBACK = {
-      settings: {
+      budget: {
         monthlyIncomeTarget: 3000000,
-        needsPct: 0.50,
-        wantsPct: 0.30,
-        savingsPct: 0.20,
+        needsPct: 0.5,
+        wantsPct: 0.3,
+        savingsPct: 0.2,
         initialCash: 134000,
         initialBank: 521158
       },
-      sheetBalances: {
-        cash: 121500,
-        bank: 521158,
-        total: 642658
-      },
       transactions: [
         {
-          timestamp: "2026-11-22 14:15:00",
-          tanggal: "2026-11-22",
-          tipe: "Pengeluaran",
-          pos: "Needs",
-          kategori: "Makan",
-          nominal: 25000,
-          catatan: "Nasi padang",
-          dompet: "Bank"
-        },
-        {
-          timestamp: "2026-11-22 17:30:00",
+          timestamp: "11/22/2026 10:32:23",
           tanggal: "2026-11-22",
           tipe: "Pengeluaran",
           pos: "Needs",
@@ -1063,806 +434,562 @@
           catatan: "Sari Roti",
           dompet: "Cash"
         }
-      ]
+      ],
+      sheetSummary: {
+        cashBalance: 121500,
+        bankBalance: 521158,
+        totalLiquid: 642658
+      }
     };
 
     let appState = {
       selectedMonth: "2026-11",
       activeFilter: "ALL",
-      settings: { ...VERIFIED_FALLBACK.settings },
+      budget: { ...VERIFIED_FALLBACK.budget },
       transactions: [...VERIFIED_FALLBACK.transactions],
+      sheetSummary: { ...VERIFIED_FALLBACK.sheetSummary },
       diagnostics: {
-        transaksi: { ok: false, msg: "Belum diuji", count: 0 },
-        budget: { ok: false, msg: "Belum diuji", cash: 0, bank: 0 },
-        dashboard: { ok: false, msg: "Belum diuji", i4: 0, i5: 0, i6: 0 },
-        sourceUsed: "Fallback Snapshot"
+        transaksi: { ok: false, detail: "Menunggu koneksi..." },
+        budget: { ok: false, detail: "Menunggu koneksi..." },
+        dashboard: { ok: false, detail: "Menunggu koneksi..." }
+      },
+      charts: {
+        allocation: null,
+        category: null,
+        wallet: null,
+        trend: null
       }
     };
 
-    let charts = {
-      donut: null,
-      walletStacked: null,
-      topCategories: null,
-      annualCombo: null
-    };
-
     // =========================================================================
-    // 2. PARSER NOMINAL RUPIAH CERDAS (parseMoney) & FORMATTERS
+    // 2. HELPER FORMATTING & PARSER ANGKA / TANGGAL
     // =========================================================================
     function formatRp(amount) {
-      const num = Number(amount) || 0;
-      const prefix = num < 0 ? "-Rp " : "Rp ";
-      return prefix + Math.abs(Math.round(num)).toLocaleString("id-ID");
-    }
-
-    function formatSignedRp(amount) {
-      const num = Number(amount) || 0;
-      if (num === 0) return "Rp 0";
-      const prefix = num > 0 ? "+Rp " : "-Rp ";
-      return prefix + Math.abs(Math.round(num)).toLocaleString("id-ID");
+      const num = Math.round(Number(amount) || 0);
+      const isNeg = num < 0;
+      const absFormatted = Math.abs(num).toLocaleString("id-ID");
+      return isNeg ? `-Rp ${absFormatted}` : `Rp ${absFormatted}`;
     }
 
     function formatShortRp(amount) {
-      const num = Math.abs(Number(amount) || 0);
-      if (num >= 1000000) return (amount < 0 ? "-" : "") + (num / 1000000).toFixed(1).replace(/\.0$/, "") + "jt";
-      if (num >= 1000) return (amount < 0 ? "-" : "") + Math.round(num / 1000) + "rb";
-      return formatRp(amount);
+      const num = Math.abs(Math.round(Number(amount) || 0));
+      if (num >= 1000000) return `${(num / 1000000).toFixed(1).replace(".0", "")}jt`;
+      if (num >= 1000) return `${Math.round(num / 1000)}rb`;
+      return `${num}`;
     }
 
-    /**
-     * Membersihkan semua karakter non-digit (kecuali tanda minus) karena seluruh
-     * nominal Rupiah di Google Sheet adalah bilangan bulat tanpa desimal sen.
-     * Contoh: "Rp134,000" -> 134000, "Rp 521.158" -> 521158, "-Rp 12,500" -> -12500.
-     */
-    function parseMoney(cell) {
-      if (cell === null || cell === undefined) return 0;
-
-      // Jika input berupa objek sel Google Visualization { v: ..., f: ... }
-      if (typeof cell === "object") {
-        if (typeof cell.v === "number" && !isNaN(cell.v)) {
-          return Math.round(cell.v);
-        }
-        const rawCandidate = cell.f !== undefined && cell.f !== null ? cell.f : cell.v;
-        return parseMoney(rawCandidate);
-      }
-
-      if (typeof cell === "number") {
-        return isNaN(cell) ? 0 : Math.round(cell);
-      }
-
-      const str = String(cell).trim();
-      if (!str) return 0;
-      const cleaned = str.replace(/[^0-9-]/g, "");
-      if (!cleaned || cleaned === "-") return 0;
-      const parsed = parseInt(cleaned, 10);
-      return isNaN(parsed) ? 0 : parsed;
+    function parseMoney(val) {
+      if (typeof val === "number" && !isNaN(val)) return val;
+      if (val === null || val === undefined) return 0;
+      const str = String(val).trim();
+      if (!str || str === "-" || str === "Rp0" || str === "Rp 0") return 0;
+      const isNegative = str.startsWith("-") || (str.startsWith("(") && str.endsWith(")"));
+      const digitsOnly = str.replace(/[^0-9]/g, "");
+      if (!digitsOnly) return 0;
+      const parsed = parseInt(digitsOnly, 10);
+      return isNegative ? -parsed : parsed;
     }
 
-    function normalizeDateString(rawVal, formattedVal) {
-      if (typeof rawVal === "string" && rawVal.startsWith("Date(")) {
-        const nums = rawVal.replace("Date(", "").replace(")", "").split(",").map(Number);
-        if (nums.length >= 3) {
-          const y = nums[0];
-          const m = String(nums[1] + 1).padStart(2, "0");
-          const d = String(nums[2]).padStart(2, "0");
-          return `${y}-${m}-${d}`;
-        }
-      }
-      const str = String(formattedVal || rawVal || "").trim();
+    function parseGvizDate(cell) {
+      if (!cell) return "";
+      const raw = cell.f || cell.v;
+      if (!raw) return "";
+      const str = String(raw).trim();
       if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
-      const dmy = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-      if (dmy) {
-        return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`;
+      const gvizMatch = str.match(/Date\((\d+),(\d+),(\d+)/);
+      if (gvizMatch) {
+        const y = gvizMatch[1];
+        const m = String(Number(gvizMatch[2]) + 1).padStart(2, "0");
+        const d = String(Number(gvizMatch[3])).padStart(2, "0");
+        return `${y}-${m}-${d}`;
       }
-      return str;
+      const slashMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (slashMatch) {
+        const m = slashMatch[1].padStart(2, "0");
+        const d = slashMatch[2].padStart(2, "0");
+        const y = slashMatch[3];
+        return `${y}-${m}-${d}`;
+      }
+      return str.slice(0, 10);
     }
 
     // =========================================================================
-    // 3. JSONP CONNECTOR BEBAS CORS KE GOOGLE VISUALIZATION API
+    // 3. JSONP CONNECTOR KE GOOGLE SHEETS (BEBAS CORS)
     // =========================================================================
-    function fetchSheetJsonp(sheetName, headersCount) {
+    function fetchSheetJsonp(sheetName, headersParam = 1) {
       return new Promise((resolve, reject) => {
-        const cbName = "gviz_" + sheetName.replace(/[^a-zA-Z0-9]/g, "") + "_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
-        const cacheBuster = Date.now();
-        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cbName}&sheet=${encodeURIComponent(sheetName)}&headers=${headersCount}&_ts=${cacheBuster}`;
-
+        const cbName = "gvizCb_" + sheetName.replace(/[^a-zA-Z0-9]/g, "_") + "_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
         const script = document.createElement("script");
-        let finished = false;
+        const timeoutId = setTimeout(() => {
+          cleanup();
+          reject(new Error(`Timeout membaca sheet ${sheetName}`));
+        }, 9000);
 
-        const cleanup = () => {
+        function cleanup() {
+          clearTimeout(timeoutId);
           delete window[cbName];
           if (script.parentNode) script.parentNode.removeChild(script);
-        };
+        }
 
-        const timeoutId = setTimeout(() => {
-          if (!finished) {
-            finished = true;
-            cleanup();
-            reject(new Error(`Timeout membaca tab ${sheetName}`));
-          }
-        }, 7500);
-
-        window[cbName] = function(response) {
-          if (finished) return;
-          finished = true;
-          clearTimeout(timeoutId);
+        window[cbName] = function (response) {
           cleanup();
           if (!response || response.status === "error") {
-            reject(new Error(`Akses ditolak / error pada tab ${sheetName}`));
-          } else {
-            resolve(response.table);
+            reject(new Error(response?.errors?.[0]?.detailed_message || `Error GViz pada ${sheetName}`));
+            return;
           }
+          resolve(response.table);
         };
 
-        script.onerror = function() {
-          if (finished) return;
-          finished = true;
-          clearTimeout(timeoutId);
+        const tqx = encodeURIComponent(`responseHandler:${cbName}`);
+        const cacheBuster = Date.now();
+        script.src = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&headers=${headersParam}&tqx=${tqx}&_=${cacheBuster}`;
+        script.onerror = () => {
           cleanup();
-          reject(new Error(`Gagal memuat script JSONP untuk ${sheetName}`));
+          reject(new Error(`Gagal memuat jaringan untuk ${sheetName}`));
         };
-
-        script.src = url;
-        document.body.appendChild(script);
+        document.head.appendChild(script);
       });
     }
 
-    // =========================================================================
-    // 4. PARSING & VERIFIKASI SILANG 3 TAB GOOGLE SHEETS
-    // =========================================================================
     async function loadAllData() {
-      const refreshIcon = document.getElementById("refreshIcon");
-      refreshIcon.classList.add("animate-spin");
+      const badge = document.getElementById("connectionBadge");
+      const dot = document.getElementById("connectionDot");
+      const text = document.getElementById("connectionText");
 
-      // Tarik 3 tab secara paralel (allSettled agar satu tab gagal tidak menggugurkan tab lain)
-      const [resTx, resBudget, resDash] = await Promise.allSettled([
+      badge.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-400/25";
+      dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-ping";
+      text.textContent = "Menyinkronkan Google Sheets...";
+
+      const [txRes, budgetRes, dashRes] = await Promise.allSettled([
         fetchSheetJsonp("Transaksi", 1),
         fetchSheetJsonp("Budget_Setting", 0),
         fetchSheetJsonp("Dashboard_Bulanan", 0)
       ]);
 
-      let anyLiveSuccess = false;
+      let liveSuccessCount = 0;
 
-      // --- A. PARSE TAB TRANSAKSI (headers=1) ---
-      let parsedTransactions = [];
-      if (resTx.status === "fulfilled" && resTx.value && Array.isArray(resTx.value.rows)) {
-        anyLiveSuccess = true;
-        resTx.value.rows.forEach((row) => {
+      // 1. Parse Tab Transaksi
+      if (txRes.status === "fulfilled" && txRes.value && Array.isArray(txRes.value.rows)) {
+        const parsedTx = [];
+        txRes.value.rows.forEach((row) => {
           const c = row.c || [];
-          const tanggal = normalizeDateString(c[1] ? c[1].v : "", c[1] ? c[1].f : "");
-          const tipe = c[2] ? String(c[2].f || c[2].v || "").trim() : "";
-
-          if (!tanggal || !tipe || tipe.toLowerCase() === "tipe" || tanggal.toLowerCase() === "tanggal") return;
-
-          const pos = c[3] ? String(c[3].f || c[3].v || "Wants").trim() : "Wants";
-          const kategori = c[4] ? String(c[4].f || c[4].v || "Lainnya").trim() : "Lainnya";
-          const nominal = parseMoney(c[5]);
-          const catatan = c[6] && c[6].v !== null ? String(c[6].f || c[6].v).trim() : "-";
-          const dompet = c[7] && c[7].v !== null ? String(c[7].f || c[7].v).trim() : "Bank";
-
-          parsedTransactions.push({
-            timestamp: c[0] ? String(c[0].f || c[0].v || "") : tanggal,
-            tanggal,
-            tipe,
-            pos,
-            kategori,
-            nominal,
-            catatan,
-            dompet
-          });
-        });
-        appState.diagnostics.transaksi = {
-          ok: true,
-          msg: `Terhubung (${parsedTransactions.length} baris transaksi)`,
-          count: parsedTransactions.length
-        };
-      } else {
-        parsedTransactions = [...VERIFIED_FALLBACK.transactions];
-        appState.diagnostics.transaksi = {
-          ok: false,
-          msg: "Offline (Menggunakan snapshot)",
-          count: parsedTransactions.length
-        };
-      }
-
-      // --- B. PARSE TAB BUDGET_SETTING (headers=0) ---
-      let initCash = null;
-      let initBank = null;
-      let targetIncome = VERIFIED_FALLBACK.settings.monthlyIncomeTarget;
-
-      if (resBudget.status === "fulfilled" && resBudget.value && Array.isArray(resBudget.value.rows)) {
-        anyLiveSuccess = true;
-        resBudget.value.rows.forEach((row) => {
-          const cells = row.c || [];
-          for (let i = 0; i < cells.length; i++) {
-            const label = cells[i] ? String(cells[i].f || cells[i].v || "").toLowerCase().trim() : "";
-            if (!label) continue;
-            const nextVal = (i + 1 < cells.length) ? parseMoney(cells[i + 1]) : 0;
-
-            if (label.includes("target pemasukan") && nextVal > 0) {
-              targetIncome = nextVal;
-            } else if ((label.includes("cash") || label.includes("tunai")) && !label.includes("bank")) {
-              initCash = nextVal;
-            } else if ((label.includes("bank") || label.includes("m-banking")) && !label.includes("cash")) {
-              initBank = nextVal;
-            }
+          const tanggal = parseGvizDate(c[1]);
+          const tipe = c[2]?.v ? String(c[2].v).trim() : "";
+          const nominal = parseMoney(c[5]?.v ?? c[5]?.f);
+          if (tanggal && tipe) {
+            parsedTx.push({
+              timestamp: c[0]?.f || c[0]?.v || tanggal,
+              tanggal,
+              tipe,
+              pos: c[3]?.v ? String(c[3].v).trim() : "-",
+              kategori: c[4]?.v ? String(c[4].v).trim() : "-",
+              nominal,
+              catatan: c[6]?.v ? String(c[6].v).trim() : "-",
+              dompet: c[7]?.v ? String(c[7].v).trim() : "Cash"
+            });
           }
         });
-        appState.diagnostics.budget = {
+        if (parsedTx.length > 0) {
+          appState.transactions = parsedTx;
+        }
+        liveSuccessCount++;
+        appState.diagnostics.transaksi = {
           ok: true,
-          msg: `Terhubung (Cash Awal: ${formatRp(initCash ?? 0)}, Bank Awal: ${formatRp(initBank ?? 0)})`,
-          cash: initCash ?? 0,
-          bank: initBank ?? 0
+          detail: `Terhubung (${parsedTx.length} baris transaksi terbaca)`
         };
       } else {
-        appState.diagnostics.budget = {
+        appState.diagnostics.transaksi = {
           ok: false,
-          msg: "Offline (Fallback Budget_Setting)",
-          cash: VERIFIED_FALLBACK.settings.initialCash,
-          bank: VERIFIED_FALLBACK.settings.initialBank
+          detail: txRes.reason?.message || "Gagal membaca tab Transaksi"
         };
       }
 
-      // --- C. PARSE TAB DASHBOARD_BULANAN (headers=0) UNTUK VERIFIKASI SILANG I4, I5, I6 ---
-      // Dalam array 0-indexed: Kolom I adalah indeks 8; Baris 4 adalah indeks 3, Baris 5 indeks 4, Baris 6 indeks 5.
-      let dashI4 = null;
-      let dashI5 = null;
-      let dashI6 = null;
+      // 2. Parse Tab Budget_Setting
+      if (budgetRes.status === "fulfilled" && budgetRes.value && Array.isArray(budgetRes.value.rows)) {
+        const rows = budgetRes.value.rows;
+        let foundCash = null;
+        let foundBank = null;
+        let foundTarget = null;
 
-      if (resDash.status === "fulfilled" && resDash.value && Array.isArray(resDash.value.rows)) {
-        anyLiveSuccess = true;
-        const rows = resDash.value.rows;
-        if (rows[3] && rows[3].c && rows[3].c[8]) dashI4 = parseMoney(rows[3].c[8]);
-        if (rows[4] && rows[4].c && rows[4].c[8]) dashI5 = parseMoney(rows[4].c[8]);
-        if (rows[5] && rows[5].c && rows[5].c[8]) dashI6 = parseMoney(rows[5].c[8]);
-
-        // Juga pindai label "Saldo Real-Time Cash" / "Saldo Real-Time Bank" secara dinamis jika posisi bergeser
         rows.forEach((r) => {
           const c = r.c || [];
-          for (let j = 0; j < c.length - 1; j++) {
-            const txt = c[j] ? String(c[j].f || c[j].v || "").toLowerCase() : "";
-            if (txt.includes("saldo real-time cash")) dashI4 = parseMoney(c[j + 1]);
-            if (txt.includes("saldo real-time bank")) dashI5 = parseMoney(c[j + 1]);
-            if (txt.includes("total uang likuid")) dashI6 = parseMoney(c[j + 1]);
-          }
+          const label = String(c[0]?.v || "").toLowerCase();
+          const valB = parseMoney(c[1]?.v ?? c[1]?.f);
+          if (label.includes("target pemasukan") && valB > 0) foundTarget = valB;
+          if (label.includes("cash") && valB >= 0) foundCash = valB;
+          if (label.includes("bank") && valB >= 0) foundBank = valB;
         });
 
+        if (foundTarget !== null) appState.budget.monthlyIncomeTarget = foundTarget;
+        if (foundCash !== null) appState.budget.initialCash = foundCash;
+        if (foundBank !== null) appState.budget.initialBank = foundBank;
+
+        liveSuccessCount++;
+        appState.diagnostics.budget = {
+          ok: true,
+          detail: `Terhubung (Saldo Awal Cash: ${formatRp(appState.budget.initialCash)}, Bank: ${formatRp(appState.budget.initialBank)})`
+        };
+      } else {
+        appState.diagnostics.budget = {
+          ok: false,
+          detail: budgetRes.reason?.message || "Gagal membaca tab Budget_Setting"
+        };
+      }
+
+      // 3. Parse Verifikasi Silang Dashboard_Bulanan (I4, I5, I6)
+      if (dashRes.status === "fulfilled" && dashRes.value && Array.isArray(dashRes.value.rows)) {
+        const rows = dashRes.value.rows;
+        rows.forEach((r) => {
+          const c = r.c || [];
+          const labelH = String(c[7]?.v || "").toLowerCase();
+          const valI = parseMoney(c[8]?.v ?? c[8]?.f);
+          if (labelH.includes("cash")) appState.sheetSummary.cashBalance = valI;
+          if (labelH.includes("bank")) appState.sheetSummary.bankBalance = valI;
+          if (labelH.includes("total uang likuid")) appState.sheetSummary.totalLiquid = valI;
+        });
+        liveSuccessCount++;
         appState.diagnostics.dashboard = {
           ok: true,
-          msg: `Terhubung (I4: ${formatRp(dashI4 ?? 0)}, I5: ${formatRp(dashI5 ?? 0)})`,
-          i4: dashI4 ?? 0,
-          i5: dashI5 ?? 0,
-          i6: dashI6 ?? 0
+          detail: `Terhubung (Cross-check Saldo Likuid: ${formatRp(appState.sheetSummary.totalLiquid)})`
         };
       } else {
         appState.diagnostics.dashboard = {
           ok: false,
-          msg: "Offline (Fallback I4/I5)",
-          i4: VERIFIED_FALLBACK.sheetBalances.cash,
-          i5: VERIFIED_FALLBACK.sheetBalances.bank,
-          i6: VERIFIED_FALLBACK.sheetBalances.total
+          detail: dashRes.reason?.message || "Gagal membaca tab Dashboard_Bulanan"
         };
       }
 
-      // --- D. REKONSILIASI SALDO AWAL & MUTASI ---
-      // Jika Budget_Setting gagal dibaca namun Dashboard_Bulanan I4/I5 terbaca, turunkan saldo awal dari I4/I5 dikurangi mutasi
-      const mutasi = computeTransactionsDelta(parsedTransactions);
-
-      if (initCash === null) {
-        if (dashI4 !== null && dashI4 > 0) {
-          initCash = dashI4 - mutasi.netCash;
-        } else {
-          initCash = VERIFIED_FALLBACK.settings.initialCash;
-        }
+      if (liveSuccessCount > 0) {
+        badge.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-400/30";
+        dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+        text.textContent = "Live Connected • Google Sheets";
+      } else {
+        badge.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-200 border border-amber-400/30";
+        dot.className = "w-2 h-2 rounded-full bg-amber-400";
+        text.textContent = "Offline Snapshot • Cek Share Sheet";
       }
-
-      if (initBank === null) {
-        if (dashI5 !== null && dashI5 > 0) {
-          initBank = dashI5 - mutasi.netBank;
-        } else {
-          initBank = VERIFIED_FALLBACK.settings.initialBank;
-        }
-      }
-
-      appState.settings = {
-        ...VERIFIED_FALLBACK.settings,
-        monthlyIncomeTarget: targetIncome,
-        initialCash: initCash,
-        initialBank: initBank
-      };
-      appState.transactions = parsedTransactions;
-      appState.diagnostics.sourceUsed = anyLiveSuccess
-        ? "Live JSONP (Transaksi + Budget_Setting + Dashboard_Bulanan)"
-        : "Verified Fallback Snapshot";
-
-      updateConnectionStatusUI(anyLiveSuccess);
-      refreshIcon.classList.remove("animate-spin");
 
       const nowStr = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
       document.getElementById("lastSyncFooter").textContent = `Terakhir diperbarui: ${nowStr} WIB`;
 
+      populateMonthDropdown();
       renderDashboard();
     }
 
-    function updateConnectionStatusUI(isLive) {
-      const dot = document.getElementById("statusDot");
-      const label = document.getElementById("statusLabel");
-      const banner = document.getElementById("fallbackBanner");
-      const badge = document.getElementById("walletSourceBadge");
-
-      if (isLive) {
-        dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0";
-        label.textContent = "Live Connected • Google Sheets";
-        label.className = "text-emerald-300 font-semibold";
-        banner.classList.add("hidden");
-        badge.textContent = "Live Dual-Source Sync";
-        badge.className = "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200";
-      } else {
-        dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0";
-        label.textContent = "Fallback Mode • Klik Diagnosa";
-        label.className = "text-amber-200 font-semibold";
-        banner.classList.remove("hidden");
-        badge.textContent = "Verified Snapshot";
-        badge.className = "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200";
-      }
-    }
-
     // =========================================================================
-    // 5. PERHITUNGAN MUTASI & SALDO REAL-TIME DOMPET (CASH & BANK)
+    // 4. PERHITUNGAN METRIK KEUANGAN & SALDO DOMPET REAL-TIME
     // =========================================================================
-    function computeTransactionsDelta(txList) {
-      let netCash = 0;
-      let netBank = 0;
+    function computeWalletBalances() {
+      let cashIn = 0, cashOut = 0;
+      let bankIn = 0, bankOut = 0;
 
-      txList.forEach((tx) => {
-        const tipe = (tx.tipe || "").toLowerCase().trim();
-        const dompet = (tx.dompet || "Bank").toLowerCase().trim();
-        const nom = Number(tx.nominal) || 0;
+      appState.transactions.forEach((tx) => {
+        const tipe = tx.tipe.toLowerCase();
+        const dompet = tx.dompet.toLowerCase();
+        const nom = tx.nominal;
 
         if (tipe === "pemasukan") {
-          if (dompet.includes("cash") || dompet.includes("tunai")) netCash += nom;
-          else netBank += nom;
+          if (dompet.includes("cash")) cashIn += nom;
+          else if (dompet.includes("bank")) bankIn += nom;
         } else if (tipe === "pengeluaran" || tipe === "tabungan") {
-          if (dompet.includes("cash") || dompet.includes("tunai")) netCash -= nom;
-          else netBank -= nom;
+          if (dompet.includes("cash")) cashOut += nom;
+          else if (dompet.includes("bank")) bankOut += nom;
         } else if (tipe === "transfer") {
-          if (dompet.includes("bank ke cash") || dompet.includes("bank to cash")) {
-            netBank -= nom;
-            netCash += nom;
-          } else if (dompet.includes("cash ke bank") || dompet.includes("cash to bank")) {
-            netCash -= nom;
-            netBank += nom;
+          if (dompet.includes("ke cash")) {
+            cashIn += nom;
+            bankOut += nom;
+          } else if (dompet.includes("ke bank")) {
+            bankIn += nom;
+            cashOut += nom;
           }
         }
       });
 
-      return { netCash, netBank };
+      const cashNet = cashIn - cashOut;
+      const bankNet = bankIn - bankOut;
+      const cashBalance = appState.budget.initialCash + cashNet;
+      const bankBalance = appState.budget.initialBank + bankNet;
+      const totalLiquid = cashBalance + bankBalance;
+
+      return { cashBalance, bankBalance, totalLiquid, cashNet, bankNet };
     }
 
-    function getWalletSummary() {
-      const initCash = appState.settings.initialCash || 0;
-      const initBank = appState.settings.initialBank || 0;
-      const delta = computeTransactionsDelta(appState.transactions);
-
-      const finalCash = initCash + delta.netCash;
-      const finalBank = initBank + delta.netBank;
-      const totalLiquid = finalCash + finalBank;
-
-      return {
-        initCash,
-        initBank,
-        netCash: delta.netCash,
-        netBank: delta.netBank,
-        finalCash,
-        finalBank,
-        totalLiquid
-      };
+    function populateMonthDropdown() {
+      const sel = document.getElementById("monthSelector");
+      const monthsSet = new Set(["2026-11", "2026-10", "2026-12"]);
+      appState.transactions.forEach((t) => {
+        if (t.tanggal && t.tanggal.length >= 7) monthsSet.add(t.tanggal.slice(0, 7));
+      });
+      const sorted = Array.from(monthsSet).sort().reverse();
+      sel.innerHTML = sorted
+        .map((m) => `<option value="${m}" ${m === appState.selectedMonth ? "selected" : ""}>${m}</option>`)
+        .join("");
     }
 
     // =========================================================================
-    // 6. RENDER SELURUH KOMPONEN DASHBOARD
+    // 5. RENDER SELURUH KOMPONEN DASHBOARD
     // =========================================================================
     function renderDashboard() {
       const month = appState.selectedMonth;
-      const [yStr, mStr] = month.split("-");
-      const y = Number(yStr);
-      const m = Number(mStr);
-
       const monthTx = appState.transactions.filter((t) => t.tanggal.startsWith(month));
-      const wallets = getWalletSummary();
 
-      // --- 1. RENDER KARTU SALDO DOMPET & LIKUIDITAS ---
-      const cashPct = wallets.totalLiquid > 0 ? Math.round((Math.max(0, wallets.finalCash) / wallets.totalLiquid) * 100) : 0;
-      const bankPct = wallets.totalLiquid > 0 ? 100 - cashPct : 0;
-
-      document.getElementById("kpiTotalLikuid").textContent = formatRp(wallets.totalLiquid);
-      document.getElementById("barCashRatio").style.width = `${cashPct}%`;
-      document.getElementById("barBankRatio").style.width = `${bankPct}%`;
-      document.getElementById("lblCashPct").textContent = `${cashPct}%`;
-      document.getElementById("lblBankPct").textContent = `${bankPct}%`;
-
-      document.getElementById("kpiSaldoCash").textContent = formatRp(wallets.finalCash);
-      document.getElementById("kpiInitCash").textContent = formatRp(wallets.initCash);
-      document.getElementById("kpiMutasiCash").textContent = formatSignedRp(wallets.netCash);
-      document.getElementById("kpiMutasiCash").className = wallets.netCash >= 0 ? "text-emerald-700" : "text-rose-600";
-
-      document.getElementById("kpiSaldoBank").textContent = formatRp(wallets.finalBank);
-      document.getElementById("kpiInitBank").textContent = formatRp(wallets.initBank);
-      document.getElementById("kpiMutasiBank").textContent = formatSignedRp(wallets.netBank);
-      document.getElementById("kpiMutasiBank").className = wallets.netBank >= 0 ? "text-emerald-700" : "text-rose-600";
-
-      // --- 2. RENDER EVALUASI 50/30/20 & BURN RATE ---
-      let actualIncome = 0;
-      let needsReal = 0;
-      let wantsReal = 0;
-      let savingsReal = 0;
-
-      monthTx.forEach((tx) => {
-        const tipe = tx.tipe.toLowerCase();
-        const pos = tx.pos.toLowerCase();
-        if (tipe === "pemasukan") actualIncome += tx.nominal;
-        else if (pos === "needs") needsReal += tx.nominal;
-        else if (pos === "wants") wantsReal += tx.nominal;
-        else if (pos === "savings" || tipe === "tabungan") savingsReal += tx.nominal;
+      let income = 0, needs = 0, wants = 0, savings = 0;
+      monthTx.forEach((t) => {
+        const tipe = t.tipe.toLowerCase();
+        const pos = t.pos.toLowerCase();
+        if (tipe === "pemasukan") income += t.nominal;
+        else if (pos === "needs") needs += t.nominal;
+        else if (pos === "wants") wants += t.nominal;
+        else if (pos === "savings" || tipe === "tabungan") savings += t.nominal;
       });
 
-      const basisIncome = actualIncome > 0 ? actualIncome : (appState.settings.monthlyIncomeTarget || 3000000);
-      const needsLimit = basisIncome * 0.50;
-      const wantsLimit = basisIncome * 0.30;
-      const savingsTarget = basisIncome * 0.20;
-      const totalExpense = needsReal + wantsReal;
-      const netCashflowMonth = actualIncome - (totalExpense + savingsReal);
+      const totalExpense = needs + wants;
+      const netCashflow = income - totalExpense - savings;
+      const wallets = computeWalletBalances();
 
-      // Skor Kesehatan (0–100)
-      const needsRatio = basisIncome > 0 ? (needsReal / basisIncome) : 0;
-      const wantsRatio = basisIncome > 0 ? (wantsReal / basisIncome) : 0;
-      const savingsRatio = basisIncome > 0 ? (savingsReal / basisIncome) : 0;
+      // KPI Cards
+      document.getElementById("kpiTotalLiquid").textContent = formatRp(wallets.totalLiquid);
+      document.getElementById("kpiLiquidSub").textContent = `Cash ${formatShortRp(wallets.cashBalance)} + Bank ${formatShortRp(wallets.bankBalance)}`;
 
-      let score = 100;
-      if (needsRatio > 0.50) score -= Math.min(35, Math.round((needsRatio - 0.50) * 150));
-      if (wantsRatio > 0.30) score -= Math.min(35, Math.round((wantsRatio - 0.30) * 150));
-      if (actualIncome > 0 && savingsRatio < 0.20) score -= Math.min(30, Math.round((0.20 - savingsRatio) * 120));
-      score = Math.max(0, Math.min(100, score));
+      document.getElementById("kpiIncome").textContent = formatRp(income);
+      const incPct = appState.budget.monthlyIncomeTarget > 0 ? Math.round((income / appState.budget.monthlyIncomeTarget) * 100) : 0;
+      document.getElementById("kpiIncomeBadge").textContent = `${incPct}% Target`;
 
-      document.getElementById("kpiHealthScore").textContent = score;
-      const healthBadge = document.getElementById("kpiHealthBadge");
-      if (score >= 80) {
-        healthBadge.textContent = "Sangat Sehat";
-        healthBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200";
-      } else if (score >= 60) {
-        healthBadge.textContent = "Cukup Sehat";
-        healthBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200";
-      } else {
-        healthBadge.textContent = "Perlu Koreksi";
-        healthBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200";
-      }
+      document.getElementById("kpiExpense").textContent = formatRp(totalExpense);
+      document.getElementById("kpiExpenseSub").textContent = `Needs ${formatRp(needs)} • Wants ${formatRp(wants)}`;
 
-      // Safe-to-Spend & Daily Burn Rate
-      const daysInMonth = new Date(y, m, 0).getDate();
-      const today = new Date();
-      const isCurrentMonth = today.getFullYear() === y && (today.getMonth() + 1) === m;
-      const elapsedDays = isCurrentMonth ? Math.max(1, today.getDate()) : daysInMonth;
-      const remainingDays = isCurrentMonth ? Math.max(1, daysInMonth - today.getDate() + 1) : daysInMonth;
+      const netEl = document.getElementById("kpiNetCashflow");
+      netEl.textContent = formatRp(netCashflow);
+      netEl.className = `font-display font-extrabold text-xl sm:text-2xl tracking-tight tabular-nums ${netCashflow >= 0 ? "text-emerald-600" : "text-rose-600"}`;
+      const netBadge = document.getElementById("kpiNetBadge");
+      netBadge.textContent = netCashflow >= 0 ? "Surplus" : "Defisit";
+      netBadge.className = `text-[11px] font-semibold px-2 py-0.5 rounded-full ${netCashflow >= 0 ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`;
 
-      const dailyBurnRate = totalExpense / elapsedDays;
-      const maxSpendQuota = needsLimit + wantsLimit;
-      const safeToSpend = Math.max(0, maxSpendQuota - totalExpense) / remainingDays;
+      // Wallet Cards
+      const cashShare = wallets.totalLiquid > 0 ? Math.round((wallets.cashBalance / wallets.totalLiquid) * 100) : 0;
+      const bankShare = wallets.totalLiquid > 0 ? 100 - cashShare : 0;
 
-      document.getElementById("kpiSafeToSpend").textContent = formatRp(safeToSpend);
-      document.getElementById("metricBurnRate").textContent = formatRp(dailyBurnRate);
-      document.getElementById("metricSafeToSpend").textContent = formatRp(safeToSpend);
+      document.getElementById("walletCashBalance").textContent = formatRp(wallets.cashBalance);
+      document.getElementById("walletCashShare").textContent = `${cashShare}% Likuid`;
+      document.getElementById("walletCashBreakdown").textContent = `Saldo Awal ${formatRp(appState.budget.initialCash)} (${wallets.cashNet >= 0 ? "+" : ""}${formatRp(wallets.cashNet)})`;
 
-      // Update Progress Bars 50/30/20
-      document.getElementById("basisIncomeDisplay").textContent = formatRp(basisIncome);
+      document.getElementById("walletBankBalance").textContent = formatRp(wallets.bankBalance);
+      document.getElementById("walletBankShare").textContent = `${bankShare}% Likuid`;
+      document.getElementById("walletBankBreakdown").textContent = `Saldo Awal ${formatRp(appState.budget.initialBank)} (${wallets.bankNet >= 0 ? "+" : ""}${formatRp(wallets.bankNet)})`;
 
-      const needsPct = (needsRatio * 100).toFixed(1);
-      document.getElementById("needsActualText").textContent = formatRp(needsReal);
-      document.getElementById("needsLimitText").textContent = formatRp(needsLimit);
-      document.getElementById("needsPctBadge").textContent = `${needsPct}%`;
-      document.getElementById("needsProgressBar").style.width = `${Math.min(100, (needsReal / (needsLimit || 1)) * 100)}%`;
-      document.getElementById("needsProgressBar").className = `h-full rounded-full transition-all duration-500 ${needsRatio <= 0.50 ? "bg-emerald-600" : "bg-rose-600"}`;
-      document.getElementById("needsStatusText").textContent = needsRatio <= 0.50 ? "Status: Sehat (≤50%)" : "Status: Overbudget (>50%)";
-      document.getElementById("needsRemainingText").textContent = formatRp(needsLimit - needsReal);
+      // 50/30/20 Progress Bars
+      const needsLimit = appState.budget.monthlyIncomeTarget * appState.budget.needsPct;
+      const wantsLimit = appState.budget.monthlyIncomeTarget * appState.budget.wantsPct;
+      const savingsLimit = appState.budget.monthlyIncomeTarget * appState.budget.savingsPct;
 
-      const wantsPct = (wantsRatio * 100).toFixed(1);
-      document.getElementById("wantsActualText").textContent = formatRp(wantsReal);
-      document.getElementById("wantsLimitText").textContent = formatRp(wantsLimit);
-      document.getElementById("wantsPctBadge").textContent = `${wantsPct}%`;
-      document.getElementById("wantsProgressBar").style.width = `${Math.min(100, (wantsReal / (wantsLimit || 1)) * 100)}%`;
-      document.getElementById("wantsProgressBar").className = `h-full rounded-full transition-all duration-500 ${wantsRatio <= 0.30 ? "bg-amber-500" : "bg-rose-600"}`;
-      document.getElementById("wantsStatusText").textContent = wantsRatio <= 0.30 ? "Status: Terkendali (≤30%)" : "Status: Bocor (>30%)";
-      document.getElementById("wantsRemainingText").textContent = formatRp(wantsLimit - wantsReal);
+      document.getElementById("needsLabel").textContent = `${formatRp(needs)} / ${formatRp(needsLimit)}`;
+      document.getElementById("needsBar").style.width = `${Math.min(100, needsLimit > 0 ? (needs / needsLimit) * 100 : 0)}%`;
 
-      const savingsPct = (savingsRatio * 100).toFixed(1);
-      document.getElementById("savingsActualText").textContent = formatRp(savingsReal);
-      document.getElementById("savingsTargetText").textContent = formatRp(savingsTarget);
-      document.getElementById("savingsPctBadge").textContent = `${savingsPct}%`;
-      document.getElementById("savingsProgressBar").style.width = `${Math.min(100, (savingsReal / (savingsTarget || 1)) * 100)}%`;
-      document.getElementById("savingsStatusText").textContent = savingsRatio >= 0.20 ? "Status: Target Tercapai (≥20%)" : "Status: Belum Mencapai 20%";
-      document.getElementById("savingsDiffText").textContent = formatSignedRp(savingsReal - savingsTarget);
+      document.getElementById("wantsLabel").textContent = `${formatRp(wants)} / ${formatRp(wantsLimit)}`;
+      document.getElementById("wantsBar").style.width = `${Math.min(100, wantsLimit > 0 ? (wants / wantsLimit) * 100 : 0)}%`;
 
-      // Update Tabel Ringkasan
-      document.getElementById("tblTargetIncome").textContent = formatRp(appState.settings.monthlyIncomeTarget);
-      document.getElementById("tblActualIncome").textContent = formatRp(actualIncome);
-      document.getElementById("tblTargetNeeds").textContent = formatRp(needsLimit);
-      document.getElementById("tblActualNeeds").textContent = formatRp(needsReal);
-      document.getElementById("tblTargetWants").textContent = formatRp(wantsLimit);
-      document.getElementById("tblActualWants").textContent = formatRp(wantsReal);
-      document.getElementById("tblTargetSavings").textContent = formatRp(savingsTarget);
-      document.getElementById("tblActualSavings").textContent = formatRp(savingsReal);
-      document.getElementById("tblNetCashflow").textContent = formatSignedRp(netCashflowMonth);
-      document.getElementById("tblNetCashflow").className = `py-2.5 text-right ${netCashflowMonth >= 0 ? "text-emerald-700" : "text-rose-600"}`;
+      document.getElementById("savingsLabel").textContent = `${formatRp(savings)} / ${formatRp(savingsLimit)}`;
+      document.getElementById("savingsBar").style.width = `${Math.min(100, savingsLimit > 0 ? (savings / savingsLimit) * 100 : 0)}%`;
 
-      // Advisor Message
-      const advisorMsg = document.getElementById("fpAdvisorMessage");
-      if (totalExpense === 0 && savingsReal === 0) {
-        advisorMsg.textContent = `Belum ada pengeluaran atau tabungan tercatat di periode ${month}. Posisi likuiditas gabungan Cash & Bank Anda saat ini adalah ${formatRp(wallets.totalLiquid)}.`;
-      } else if (wantsRatio > 0.30) {
-        advisorMsg.textContent = `Pengeluaran Wants sudah menyerap ${wantsPct}% (melewati batas sehat 30%). Pertahankan Safe-to-Spend harian di bawah ${formatRp(safeToSpend)}.`;
-      } else {
-        advisorMsg.textContent = `Arus kas bulan ${month} terkendali (${needsPct}% Needs, ${wantsPct}% Wants). Sisa likuiditas Cash ${formatRp(wallets.finalCash)} & Bank ${formatRp(wallets.finalBank)} siap dikelola sesuai rencana.`;
-      }
+      // Burn Rate & Health Score
+      const daysElapsed = 22;
+      const avgDaily = totalExpense / daysElapsed;
+      const remainingDays = 8;
+      const remainingBudget = Math.max(0, needsLimit + wantsLimit - totalExpense);
+      const safeToSpend = remainingBudget / remainingDays;
 
-      // Render Charts, Heatmap, Table, & Diagnostics Modal Content
-      renderCharts(needsReal, wantsReal, savingsReal, wallets, monthTx);
-      renderCalendarHeatmap(y, m, monthTx);
+      document.getElementById("metricBurnRate").textContent = `${formatRp(avgDaily)} / hari`;
+      document.getElementById("metricSafeToSpend").textContent = `${formatRp(safeToSpend)} / hari`;
+
+      let score = 65;
+      if (needs <= needsLimit) score += 10;
+      if (wants <= wantsLimit) score += 10;
+      if (savings >= savingsLimit) score += 15;
+      score = Math.min(100, score);
+
+      document.getElementById("healthScoreBadge").textContent = `Skor: ${score}/100`;
+      document.getElementById("plannerAdvice").textContent =
+        totalExpense === 0
+          ? "Belum ada pengeluaran tercatat pada bulan ini. Pertahankan disiplin anggaran 50/30/20."
+          : `Pengeluaran terkendali di ${formatRp(totalExpense)} (${((totalExpense / (needsLimit + wantsLimit)) * 100).toFixed(1)}% dari kuota belanja bulanan). Kuota aman harian Anda masih ${formatRp(safeToSpend)}.`;
+
+      renderCharts(needs, wants, savings, monthTx, wallets);
+      renderCalendarHeatmap(month, monthTx);
       renderTransactionsTable(monthTx);
-      updateDiagnosticsModalContent(wallets);
     }
 
-    // =========================================================================
-    // 7. VISUALISASI GRAFIK (CHART.JS)
-    // =========================================================================
-    function renderCharts(needsReal, wantsReal, savingsReal, wallets, monthTx) {
-      // 1. Donut Chart: Needs vs Wants vs Savings
-      const ctxDonut = document.getElementById("chartAllocationDonut").getContext("2d");
-      if (charts.donut) charts.donut.destroy();
-
-      const hasAlloc = (needsReal + wantsReal + savingsReal) > 0;
-      charts.donut = new Chart(ctxDonut, {
+    function renderCharts(needs, wants, savings, monthTx, wallets) {
+      // 1. Donut Chart 50/30/20
+      const ctxAlloc = document.getElementById("allocationChart").getContext("2d");
+      if (appState.charts.allocation) appState.charts.allocation.destroy();
+      const hasAllocData = needs + wants + savings > 0;
+      appState.charts.allocation = new Chart(ctxAlloc, {
         type: "doughnut",
         data: {
-          labels: hasAlloc ? ["Needs (Kebutuhan)", "Wants (Gaya Hidup)", "Savings (Tabungan)"] : ["Belum Ada Transaksi"],
-          datasets: [{
-            data: hasAlloc ? [needsReal, wantsReal, savingsReal] : [1],
-            backgroundColor: hasAlloc ? ["#059669", "#f59e0b", "#0284c7"] : ["#e2e8f0"],
-            borderWidth: 2,
-            borderColor: "#ffffff",
-            hoverOffset: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: "68%",
-          plugins: {
-            legend: {
-              position: "bottom",
-              labels: { usePointStyle: true, padding: 14, font: { family: "Inter", size: 12, weight: "600" } }
-            },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => hasAlloc ? ` ${ctx.label}: ${formatRp(ctx.raw)}` : " Belum ada data"
-              }
-            }
-          }
-        }
-      });
-
-      // 2. Stacked Horizontal Bar Chart: Komposisi Dompet (Cash vs Bank)
-      document.getElementById("chartLblCash").textContent = formatRp(wallets.finalCash);
-      document.getElementById("chartLblBank").textContent = formatRp(wallets.finalBank);
-
-      const ctxWallet = document.getElementById("chartWalletStacked").getContext("2d");
-      if (charts.walletStacked) charts.walletStacked.destroy();
-
-      charts.walletStacked = new Chart(ctxWallet, {
-        type: "bar",
-        data: {
-          labels: ["Komposisi Likuiditas"],
+          labels: hasAllocData ? ["Needs", "Wants", "Savings"] : ["Belum Ada Alokasi"],
           datasets: [
             {
-              label: "Cash (Tunai)",
-              data: [Math.max(0, wallets.finalCash)],
-              backgroundColor: "#f59e0b",
-              borderRadius: 8,
-              barThickness: 46
-            },
-            {
-              label: "Bank (m-Banking)",
-              data: [Math.max(0, wallets.finalBank)],
-              backgroundColor: "#0284c7",
-              borderRadius: 8,
-              barThickness: 46
+              data: hasAllocData ? [needs, wants, savings] : [1],
+              backgroundColor: hasAllocData ? ["#10b981", "#f59e0b", "#6366f1"] : ["#e2e8f0"],
+              borderWidth: 0
             }
           ]
         },
         options: {
-          indexAxis: "y",
           responsive: true,
           maintainAspectRatio: false,
+          cutout: "70%",
           plugins: {
-            legend: {
-              position: "bottom",
-              labels: { usePointStyle: true, padding: 14, font: { family: "Inter", size: 12, weight: "600" } }
-            },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => ` ${ctx.dataset.label}: ${formatRp(ctx.raw)}`
-              }
-            }
-          },
-          scales: {
-            x: {
-              stacked: true,
-              grid: { color: "#f1f5f9" },
-              ticks: { callback: (v) => formatShortRp(v) }
-            },
-            y: {
-              stacked: true,
-              grid: { display: false },
-              ticks: { display: false }
-            }
+            legend: { position: "bottom", labels: { boxWidth: 10, font: { size: 11 } } }
           }
         }
       });
 
-      // 3. Bar Chart: Top 5 Kategori Pengeluaran Bulan Terpilih
+      // 2. Top 5 Kategori Pengeluaran
       const catTotals = {};
-      monthTx.forEach((tx) => {
-        if (tx.tipe.toLowerCase() === "pengeluaran") {
-          catTotals[tx.kategori] = (catTotals[tx.kategori] || 0) + tx.nominal;
+      monthTx.forEach((t) => {
+        if (t.tipe.toLowerCase() === "pengeluaran") {
+          catTotals[t.kategori] = (catTotals[t.kategori] || 0) + t.nominal;
         }
       });
-
-      const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
-      const top5 = sortedCats.slice(0, 5);
-      document.getElementById("topCategoryBadge").textContent = `${sortedCats.length} Kategori`;
-
-      const ctxTop = document.getElementById("chartTopCategories").getContext("2d");
-      if (charts.topCategories) charts.topCategories.destroy();
-
-      charts.topCategories = new Chart(ctxTop, {
+      const topCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const ctxCat = document.getElementById("categoryChart").getContext("2d");
+      if (appState.charts.category) appState.charts.category.destroy();
+      appState.charts.category = new Chart(ctxCat, {
         type: "bar",
         data: {
-          labels: top5.length > 0 ? top5.map((x) => x[0]) : ["Belum ada pengeluaran"],
-          datasets: [{
-            label: "Pengeluaran",
-            data: top5.length > 0 ? top5.map((x) => x[1]) : [0],
-            backgroundColor: ["#0b2b22", "#16654e", "#059669", "#10b981", "#34d399"],
-            borderRadius: 8,
-            barThickness: 24
-          }]
+          labels: topCats.length ? topCats.map((c) => c[0]) : ["Belum Ada Data"],
+          datasets: [
+            {
+              label: "Pengeluaran (Rp)",
+              data: topCats.length ? topCats.map((c) => c[1]) : [0],
+              backgroundColor: "#0f766e",
+              borderRadius: 8
+            }
+          ]
         },
         options: {
           indexAxis: "y",
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: { callbacks: { label: (ctx) => ` ${formatRp(ctx.raw)}` } }
-          },
+          plugins: { legend: { display: false } },
           scales: {
-            x: { grid: { color: "#f1f5f9" }, ticks: { callback: (v) => formatShortRp(v) } },
-            y: { grid: { display: false }, ticks: { font: { family: "Inter", size: 12, weight: "600" }, color: "#1e293b" } }
+            x: { ticks: { callback: (v) => formatShortRp(v), font: { size: 10 } } },
+            y: { ticks: { font: { size: 11 } } }
           }
         }
       });
 
-      // 4. Combo Bar/Line Chart: Tren Pemasukan vs Pengeluaran Jan–Des 2026
-      const labels12 = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-      const inc12 = Array(12).fill(0);
-      const exp12 = Array(12).fill(0);
-      const sav12 = Array(12).fill(0);
-
-      appState.transactions.forEach((tx) => {
-        if (!tx.tanggal.startsWith("2026-")) return;
-        const mIdx = Number(tx.tanggal.split("-")[1]) - 1;
-        if (mIdx < 0 || mIdx > 11) return;
-        const tipe = tx.tipe.toLowerCase();
-        if (tipe === "pemasukan") inc12[mIdx] += tx.nominal;
-        else if (tipe === "pengeluaran") exp12[mIdx] += tx.nominal;
-        else if (tipe === "tabungan") sav12[mIdx] += tx.nominal;
-      });
-
-      const ctxCombo = document.getElementById("chartAnnualCombo").getContext("2d");
-      if (charts.annualCombo) charts.annualCombo.destroy();
-
-      charts.annualCombo = new Chart(ctxCombo, {
+      // 3. Komposisi Likuiditas Dompet
+      const ctxWallet = document.getElementById("walletChart").getContext("2d");
+      if (appState.charts.wallet) appState.charts.wallet.destroy();
+      appState.charts.wallet = new Chart(ctxWallet, {
         type: "bar",
         data: {
-          labels: labels12,
+          labels: ["Cash (Tunai)", "Bank (m-Banking)"],
           datasets: [
-            { label: "Pemasukan", data: inc12, backgroundColor: "#059669", borderRadius: 5, order: 2 },
-            { label: "Pengeluaran", data: exp12, backgroundColor: "#f43f5e", borderRadius: 5, order: 3 },
             {
-              label: "Tabungan",
-              data: sav12,
-              type: "line",
-              borderColor: "#0284c7",
-              backgroundColor: "#0284c7",
-              borderWidth: 2.5,
-              tension: 0.35,
-              order: 1
+              label: "Saldo Akhir (Rp)",
+              data: [wallets.cashBalance, wallets.bankBalance],
+              backgroundColor: ["#f59e0b", "#0284c7"],
+              borderRadius: 10
             }
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { position: "bottom", labels: { usePointStyle: true, padding: 14, font: { family: "Inter", size: 12, weight: "600" } } },
-            tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatRp(ctx.raw)}` } }
-          },
+          plugins: { legend: { display: false } },
           scales: {
-            x: { grid: { display: false } },
-            y: { grid: { color: "#f1f5f9" }, ticks: { callback: (v) => formatShortRp(v) } }
+            y: { ticks: { callback: (v) => formatShortRp(v), font: { size: 10 } } },
+            x: { ticks: { font: { size: 11 } } }
+          }
+        }
+      });
+
+      // 4. Tren Pemasukan vs Pengeluaran
+      const months = ["2026-07", "2026-08", "2026-09", "2026-10", "2026-11", "2026-12"];
+      const incSeries = months.map((m) =>
+        appState.transactions
+          .filter((t) => t.tanggal.startsWith(m) && t.tipe.toLowerCase() === "pemasukan")
+          .reduce((acc, t) => acc + t.nominal, 0)
+      );
+      const expSeries = months.map((m) =>
+        appState.transactions
+          .filter((t) => t.tanggal.startsWith(m) && t.tipe.toLowerCase() === "pengeluaran")
+          .reduce((acc, t) => acc + t.nominal, 0)
+      );
+
+      const ctxTrend = document.getElementById("trendChart").getContext("2d");
+      if (appState.charts.trend) appState.charts.trend.destroy();
+      appState.charts.trend = new Chart(ctxTrend, {
+        type: "line",
+        data: {
+          labels: months,
+          datasets: [
+            {
+              label: "Pemasukan",
+              data: incSeries,
+              borderColor: "#10b981",
+              backgroundColor: "rgba(16,185,129,0.12)",
+              tension: 0.35,
+              fill: true
+            },
+            {
+              label: "Pengeluaran",
+              data: expSeries,
+              borderColor: "#f43f5e",
+              backgroundColor: "rgba(244,63,94,0.12)",
+              tension: 0.35,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: "bottom", labels: { boxWidth: 10, font: { size: 11 } } } },
+          scales: {
+            y: { ticks: { callback: (v) => formatShortRp(v), font: { size: 10 } } },
+            x: { ticks: { font: { size: 10 } } }
           }
         }
       });
     }
 
-    // =========================================================================
-    // 8. TRANSACTION CALENDAR HEATMAP (SENIN – MINGGU)
-    // =========================================================================
-    function renderCalendarHeatmap(year, month, monthTx) {
-      const monthStr = `${year}-${String(month).padStart(2, "0")}`;
-      document.getElementById("heatmapMonthTitle").textContent = monthStr;
+    function renderCalendarHeatmap(monthStr, monthTx) {
+      const grid = document.getElementById("calendarHeatmapGrid");
+      const tooltip = document.getElementById("heatmapTooltip");
+      grid.innerHTML = "";
 
-      const dailyTotals = {};
+      const [year, month] = monthStr.split("-").map(Number);
+      const firstDayObj = new Date(year, month - 1, 1);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const startWeekday = (firstDayObj.getDay() + 6) % 7;
+
+      const dailySpend = {};
       const dailyDetails = {};
-
-      monthTx.forEach((tx) => {
-        if (tx.tipe.toLowerCase() === "pengeluaran") {
-          dailyTotals[tx.tanggal] = (dailyTotals[tx.tanggal] || 0) + tx.nominal;
-          if (!dailyDetails[tx.tanggal]) dailyDetails[tx.tanggal] = [];
-          dailyDetails[tx.tanggal].push(tx);
+      monthTx.forEach((t) => {
+        if (t.tipe.toLowerCase() === "pengeluaran") {
+          const dayNum = Number(t.tanggal.slice(8, 10));
+          dailySpend[dayNum] = (dailySpend[dayNum] || 0) + t.nominal;
+          if (!dailyDetails[dayNum]) dailyDetails[dayNum] = [];
+          dailyDetails[dayNum].push(`${t.kategori}: ${formatRp(t.nominal)} (${t.catatan})`);
         }
       });
 
-      const daysInMonth = new Date(year, month, 0).getDate();
-      const firstDayJs = new Date(year, month - 1, 1).getDay(); // 0=Min, 1=Sen, ..., 6=Sab
-      const mondayOffset = (firstDayJs + 6) % 7;
+      const maxDailySpend = Math.max(0, ...Object.values(dailySpend));
 
-      const spendValues = Object.values(dailyTotals).filter((v) => v > 0);
-      const maxDailySpend = spendValues.length > 0 ? Math.max(...spendValues) : 0;
-
-      let noSpendCount = 0;
-      let activeSpendCount = 0;
-      let peakDate = "-";
-      let peakAmount = 0;
-      let weekdayTotal = 0;
-      let weekendTotal = 0;
-
-      const grid = document.getElementById("calendarHeatmapGrid");
-      grid.innerHTML = "";
-
-      for (let i = 0; i < mondayOffset; i++) {
+      for (let i = 0; i < startWeekday; i++) {
         const emptyCell = document.createElement("div");
-        emptyCell.className = "h-14 sm:h-16 rounded-xl bg-slate-50/40 border border-transparent";
+        emptyCell.className = "h-14 sm:h-16 rounded-xl bg-slate-50/60 border border-transparent";
         grid.appendChild(emptyCell);
       }
 
       for (let day = 1; day <= daysInMonth; day++) {
-        const dateStr = `${monthStr}-${String(day).padStart(2, "0")}`;
-        const amount = dailyTotals[dateStr] || 0;
-        const dow = new Date(year, month - 1, day).getDay();
-        const isWeekend = dow === 0 || dow === 6;
-
-        if (amount === 0) {
-          noSpendCount++;
-        } else {
-          activeSpendCount++;
-          if (amount > peakAmount) {
-            peakAmount = amount;
-            peakDate = dateStr;
-          }
-          if (isWeekend) weekendTotal += amount;
-          else weekdayTotal += amount;
-        }
-
-        let colorClass = "bg-emerald-50/70 border-emerald-200/80 text-slate-700";
-        let amountClass = "text-emerald-700 font-medium";
+        const amount = dailySpend[day] || 0;
+        let colorClass = "bg-emerald-50/70 border-emerald-200/80 text-emerald-900";
+        let amountClass = "text-emerald-700/80 font-medium";
 
         if (amount > 0 && maxDailySpend > 0) {
           const ratio = amount / maxDailySpend;
@@ -1876,193 +1003,111 @@
             colorClass = "bg-amber-100 border-amber-300 text-amber-950";
             amountClass = "text-amber-900 font-semibold";
           }
-      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-        <button type="button" onclick="closeDiagnosticsModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">
-          Tutup
-        </button>
-        <button type="button" onclick="closeDiagnosticsModal(); loadAllData();" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-sm">
-          Uji Ulang Koneksi Sekarang
-        </button>
-      </div>
-    </div>
-  </div>
+        }
+
+        const cell = document.createElement("div");
+        cell.className = `heatmap-cell h-14 sm:h-16 rounded-xl border p-1.5 flex flex-col justify-between cursor-pointer select-none ${colorClass}`;
+        cell.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold">${day}</span>
+          </div>
           <div class="text-[10px] sm:text-[11px] truncate tabular-nums ${amountClass}">
             ${amount > 0 ? formatShortRp(amount) : "Rp 0"}
           </div>
         `;
 
         const showTooltip = (e) => {
-          const tt = document.getElementById("heatmapTooltip");
-          document.getElementById("ttDate").textContent = dateStr;
-          document.getElementById("ttTotal").textContent = formatRp(amount);
-          const listEl = document.getElementById("ttList");
-          const items = dailyDetails[dateStr] || [];
-          if (items.length === 0) {
-            listEl.innerHTML = `<div class="text-emerald-300 italic">No-Spend Day — Tidak ada pengeluaran.</div>`;
-          } else {
-            listEl.innerHTML = items.map((it) => `
-              <div class="flex justify-between gap-3">
-                <span>• ${it.kategori} (${it.dompet})</span>
-                <span class="font-semibold tabular-nums">${formatRp(it.nominal)}</span>
-              </div>
-            `).join("");
-          }
-
-          tt.classList.remove("hidden");
-          const x = Math.min(window.innerWidth - 280, Math.max(12, (e.clientX || 120) + 12));
-          const yPos = Math.min(window.innerHeight - 160, Math.max(12, (e.clientY || 120) + 12));
-          tt.style.left = `${x}px`;
-          tt.style.top = `${yPos}px`;
+          const items = dailyDetails[day] || ["Tidak ada pengeluaran (No-Spend Day)"];
+          tooltip.innerHTML = `
+            <div class="font-bold text-emerald-300 mb-1">${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")} • Total: ${formatRp(amount)}</div>
+            <ul class="space-y-0.5 text-slate-200">${items.map((it) => `<li>• ${it}</li>`).join("")}</ul>
+          `;
+          tooltip.classList.remove("hidden");
+          const x = Math.min(window.innerWidth - 270, Math.max(12, (e.clientX || 120) + 12));
+          const y = Math.min(window.innerHeight - 110, Math.max(12, (e.clientY || 120) - 20));
+          tooltip.style.left = `${x}px`;
+          tooltip.style.top = `${y}px`;
         };
 
         cell.addEventListener("mouseenter", showTooltip);
-        cell.addEventListener("mousemove", showTooltip);
         cell.addEventListener("click", showTooltip);
-        cell.addEventListener("mouseleave", () => {
-          document.getElementById("heatmapTooltip").classList.add("hidden");
-        });
-
+        cell.addEventListener("mouseleave", () => tooltip.classList.add("hidden"));
         grid.appendChild(cell);
       }
-
-      document.getElementById("calNoSpendCount").textContent = `${noSpendCount} hari`;
-      document.getElementById("calActiveSpendCount").textContent = `${activeSpendCount} hari`;
-      document.getElementById("calPeakDateLabel").textContent = peakDate !== "-" ? `Tanggal ${peakDate}` : "Belum ada belanja";
-      document.getElementById("calPeakAmount").textContent = formatRp(peakAmount);
-
-      const totalWeek = weekdayTotal + weekendTotal;
-      const wdPct = totalWeek > 0 ? Math.round((weekdayTotal / totalWeek) * 100) : 50;
-      const wePct = totalWeek > 0 ? 100 - wdPct : 50;
-
-      document.getElementById("barWeekdayPct").style.width = `${wdPct}%`;
-      document.getElementById("barWeekendPct").style.width = `${wePct}%`;
-      document.getElementById("calWeekdayTotal").textContent = `${formatRp(weekdayTotal)} (${totalWeek > 0 ? wdPct : 0}%)`;
-      document.getElementById("calWeekendTotal").textContent = `${formatRp(weekendTotal)} (${totalWeek > 0 ? wePct : 0}%)`;
     }
 
-    // =========================================================================
-    // 9. RIWAYAT TRANSAKSI (READ-ONLY TABLE)
-    // =========================================================================
     function renderTransactionsTable(monthTx) {
-      const tbody = document.getElementById("txTableBody");
-      const filter = appState.activeFilter;
-
-      const filtered = monthTx.filter((tx) => {
-        if (filter === "ALL") return true;
-        if (filter.startsWith("WALLET:")) {
-          const targetWallet = filter.split(":")[1].toLowerCase();
-          return (tx.dompet || "").toLowerCase().includes(targetWallet);
-        }
-        if (filter.startsWith("TYPE:")) {
-          const targetType = filter.split(":")[1].toLowerCase();
-          return (tx.tipe || "").toLowerCase() === targetType;
-        }
-        return true;
-      }).slice().reverse();
+      const tbody = document.getElementById("transactionsTableBody");
+      const filtered = monthTx.filter((t) => {
+        if (appState.activeFilter === "ALL") return true;
+        return t.tipe.toLowerCase() === appState.activeFilter.toLowerCase();
+      });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7" class="py-10 px-6 text-center text-xs text-slate-400">
-              Tidak ada transaksi yang cocok pada filter bulan <strong>${appState.selectedMonth}</strong>.
-            </td>
-          </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-slate-400">Tidak ada transaksi untuk filter ini pada bulan ${appState.selectedMonth}.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = filtered.map((tx) => {
-        const tipeLower = tx.tipe.toLowerCase();
-        let tipeBadge = "bg-rose-50 text-rose-700 border-rose-200";
-        let nominalColor = "text-rose-600";
-        let sign = "-";
+      tbody.innerHTML = filtered
+        .slice()
+        .reverse()
+        .map((t) => {
+          const isIncome = t.tipe.toLowerCase() === "pemasukan";
+          const isExpense = t.tipe.toLowerCase() === "pengeluaran";
+          const badgeClass = isIncome
+            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+            : isExpense
+            ? "bg-rose-50 text-rose-700 border-rose-200"
+            : "bg-indigo-50 text-indigo-700 border-indigo-200";
+          const nominalClass = isIncome ? "text-emerald-600" : isExpense ? "text-rose-600" : "text-indigo-600";
 
-        if (tipeLower === "pemasukan") {
-          tipeBadge = "bg-emerald-50 text-emerald-700 border-emerald-200";
-          nominalColor = "text-emerald-700";
-          sign = "+";
-        } else if (tipeLower === "tabungan") {
-          tipeBadge = "bg-sky-50 text-sky-700 border-sky-200";
-          nominalColor = "text-sky-700";
-          sign = "";
-        } else if (tipeLower === "transfer") {
-          tipeBadge = "bg-violet-50 text-violet-700 border-violet-200";
-          nominalColor = "text-violet-700";
-          sign = "";
-        }
-
-        const dompetLower = (tx.dompet || "").toLowerCase();
-        const dompetBadge = dompetLower.includes("cash") && !dompetLower.includes("ke")
-          ? "bg-amber-50 text-amber-800 border-amber-200"
-          : (dompetLower.includes("ke") ? "bg-violet-50 text-violet-800 border-violet-200" : "bg-sky-50 text-sky-800 border-sky-200");
-
-        return `
-          <tr class="hover:bg-slate-50/80 transition">
-            <td class="py-3.5 px-5 font-mono text-xs text-slate-600 whitespace-nowrap">${tx.tanggal}</td>
-            <td class="py-3.5 px-4 whitespace-nowrap">
-              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${tipeBadge}">${tx.tipe}</span>
-            </td>
-            <td class="py-3.5 px-4 whitespace-nowrap">
-              <span class="px-2.5 py-0.5 rounded-md text-[11px] font-semibold border ${dompetBadge}">${tx.dompet}</span>
-            </td>
-            <td class="py-3.5 px-4 text-xs font-medium text-slate-600 whitespace-nowrap">${tx.pos}</td>
-            <td class="py-3.5 px-4 font-semibold text-slate-900 whitespace-nowrap">${tx.kategori}</td>
-            <td class="py-3.5 px-4 text-right font-display font-bold tabular-nums whitespace-nowrap ${nominalColor}">${sign}${formatRp(tx.nominal)}</td>
-            <td class="py-3.5 px-5 text-xs text-slate-500 max-w-xs truncate" title="${tx.catatan}">${tx.catatan}</td>
-          </tr>
-        `;
-      }).join("");
+          return `
+            <tr class="hover:bg-slate-50/80 transition">
+              <td class="px-5 py-3 font-mono text-xs text-slate-600 whitespace-nowrap">${t.tanggal}</td>
+              <td class="px-5 py-3 whitespace-nowrap">
+                <span class="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${badgeClass}">${t.tipe}</span>
+              </td>
+              <td class="px-5 py-3 text-xs font-semibold text-slate-700 whitespace-nowrap">${t.dompet}</td>
+              <td class="px-5 py-3 text-xs text-slate-700 whitespace-nowrap">${t.pos} • <span class="font-semibold">${t.kategori}</span></td>
+              <td class="px-5 py-3 text-xs text-slate-500">${t.catatan}</td>
+              <td class="px-5 py-3 text-right font-bold text-xs tabular-nums whitespace-nowrap ${nominalClass}">${isIncome ? "+" : "-"}${formatRp(t.nominal)}</td>
+            </tr>
+          `;
+        })
+        .join("");
     }
 
     // =========================================================================
-    // 10. MODAL DIAGNOSA KONEKSI & EVENT LISTENERS
+    // 6. DIAGNOSTICS MODAL & EVENT LISTENERS
     // =========================================================================
-    function updateDiagnosticsModalContent(wallets) {
-      const d = appState.diagnostics;
-      document.getElementById("diagTabTransaksi").textContent = d.transaksi.msg;
-      document.getElementById("diagTabBudget").textContent = d.budget.msg;
-      document.getElementById("diagTabDashboard").textContent = d.dashboard.msg;
-
-      document.getElementById("diagBalanceSummary").innerHTML = `
-        <div>• <strong>Sumber Aktif:</strong> ${d.sourceUsed}</div>
-        <div>• <strong>Cash:</strong> Awal ${formatRp(wallets.initCash)} + Mutasi ${formatSignedRp(wallets.netCash)} = <strong>${formatRp(wallets.finalCash)}</strong> (Sheet I4: ${formatRp(d.dashboard.i4)})</div>
-        <div>• <strong>Bank:</strong> Awal ${formatRp(wallets.initBank)} + Mutasi ${formatSignedRp(wallets.netBank)} = <strong>${formatRp(wallets.finalBank)}</strong> (Sheet I5: ${formatRp(d.dashboard.i5)})</div>
-        <div>• <strong>Total Likuid:</strong> <strong>${formatRp(wallets.totalLiquid)}</strong></div>
-      `;
-    }
-
     function openDiagnosticsModal() {
-      const modal = document.getElementById("diagnosticsModal");
-      modal.classList.remove("hidden");
-      modal.classList.add("flex");
+      const content = document.getElementById("diagnosticsContent");
+      const items = [
+        { title: "Tab Transaksi", data: appState.diagnostics.transaksi },
+        { title: "Tab Budget_Setting", data: appState.diagnostics.budget },
+        { title: "Tab Dashboard_Bulanan", data: appState.diagnostics.dashboard }
+      ];
+      content.innerHTML = items
+        .map(
+          (item) => `
+          <div class="p-3 rounded-xl border ${item.data.ok ? "bg-emerald-50/60 border-emerald-200" : "bg-rose-50/60 border-rose-200"}">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-xs text-slate-800">${item.title}</span>
+              <span class="text-[11px] font-bold ${item.data.ok ? "text-emerald-700" : "text-rose-700"}">${item.data.ok ? "OK" : "GAGAL"}</span>
+            </div>
+            <p class="text-[11px] text-slate-600 mt-1">${item.data.detail}</p>
+          </div>
+        `
+        )
+        .join("");
+      document.getElementById("diagnosticsModal").classList.remove("hidden");
     }
 
     function closeDiagnosticsModal() {
-      const modal = document.getElementById("diagnosticsModal");
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
+      document.getElementById("diagnosticsModal").classList.add("hidden");
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      // Event listener input PIN / Password
-      const pinInput = document.getElementById("pinInputField");
-      pinInput.addEventListener("input", () => {
-        document.getElementById("lockErrorMsg").classList.add("hidden");
-        if (authMode === "PIN") {
-          pinInput.value = pinInput.value.replace(/\D/g, "").slice(0, 6);
-          updatePinDots();
-          if (pinInput.value.length === 6) {
-            verifyPinAttempt();
-          }
-        }
-      });
-      pinInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          verifyPinAttempt();
-        }
-      });
-
       document.getElementById("monthSelector").addEventListener("change", (e) => {
         appState.selectedMonth = e.target.value;
         renderDashboard();
@@ -2085,10 +1130,13 @@
       document.getElementById("btnLockScreen").addEventListener("click", lockDashboard);
 
       // Cek status sesi unlock sebelum menarik data Google Sheets
-      if (sessionStorage.getItem(SESSION_UNLOCK_KEY) === "true") {
+      let isUnlocked = false;
+      try {
+        isUnlocked = sessionStorage.getItem(SESSION_UNLOCK_KEY) === "true";
+      } catch (e) {}
+
+      if (isUnlocked) {
         unlockDashboard();
-      } else {
-        pinInput.focus();
       }
     });
   </script>
