@@ -1,129 +1,430 @@
-<!-- ... existing code ... -->
-    .animate-shake {
-      animation: shakeError 0.38s cubic-bezier(.36,.07,.19,.97) both;
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal Finance Command Center</title>
+
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              900: '#0a192f',
+              950: '#061020',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Chart.js Treemap Plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.3.0/dist/chartjs-chart-treemap.min.js"></script>
+
+  <style>
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
     }
-    .keypad-btn {
-      touch-action: manipulation;
-      user-select: none;
-      -webkit-user-select: none;
-      cursor: pointer;
-      position: relative;
-      z-index: 20;
+    .glass-card {
+      background: #ffffff;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+    }
+    .heatmap-cell {
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .heatmap-cell:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+      z-index: 10;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
     }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
   <!-- ===================================================================== -->
-  <!-- SECURITY LOCK SCREEN OVERLAY (NO-SCROLL 100dvh COMPACT PIN GATE)      -->
-  <!-- ===================================================================== -->
-  <div id="lockScreenOverlay" style="height: 100dvh; width: 100vw; z-index: 9999;" class="fixed inset-0 overflow-hidden flex items-center justify-center bg-gradient-to-br from-slate-950 via-brand-950 to-slate-900 p-3">
-    
-    <!-- Kartu Utama PIN (Kompak, Maksimal Tinggi 420px, Bebas Scroll) -->
-    <div id="lockCard" style="max-height: calc(100dvh - 24px); max-width: 340px; pointer-events: auto;" class="relative z-30 w-full rounded-3xl bg-slate-900/90 backdrop-blur-xl border border-white/15 shadow-2xl px-5 py-4 sm:py-5 text-white flex flex-col justify-between gap-3">
-      
-      <!-- Header Ringkas -->
-      <div class="text-center space-y-1">
-        <div class="w-10 h-10 mx-auto rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-950/60 pointer-events-none">
-          <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-          </svg>
-        </div>
-        <h2 class="font-display font-bold text-base tracking-tight text-white leading-tight">Personal Finance Command Center</h2>
-        <p class="text-[11px] text-slate-300">Masukkan 6-Digit PIN Akses</p>
-      </div>
-
-      <!-- Indikator 6-Digit PIN & Pesan Status Fixed-Height -->
-      <div class="space-y-1.5">
-        <div id="pinDotsContainer" class="flex justify-center gap-3 py-1.5">
-          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150"></span>
-          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150"></span>
-          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150"></span>
-          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150"></span>
-          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150"></span>
-          <span class="pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150"></span>
-        </div>
-
-        <!-- Area Status Tinggi Tetap (h-5) agar layout tidak melompat -->
-        <div class="h-5 flex items-center justify-center">
-          <span id="lockStatusText" class="text-[11px] font-medium text-slate-400">Ketik lewat keyboard atau tekan keypad</span>
-        </div>
-      </div>
-
-      <!-- Grid Keypad 3x4 Proporsional (Tinggi Tombol 44px - 48px) -->
-      <div id="numericKeypad" class="grid grid-cols-3 gap-2">
-        <button type="button" data-digit="1" onclick="appendPinDigit('1')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">1</button>
-        <button type="button" data-digit="2" onclick="appendPinDigit('2')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">2</button>
-        <button type="button" data-digit="3" onclick="appendPinDigit('3')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">3</button>
-        <button type="button" data-digit="4" onclick="appendPinDigit('4')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">4</button>
-        <button type="button" data-digit="5" onclick="appendPinDigit('5')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">5</button>
-        <button type="button" data-digit="6" onclick="appendPinDigit('6')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">6</button>
-        <button type="button" data-digit="7" onclick="appendPinDigit('7')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">7</button>
-        <button type="button" data-digit="8" onclick="appendPinDigit('8')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">8</button>
-        <button type="button" data-digit="9" onclick="appendPinDigit('9')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">9</button>
-        <button type="button" onclick="clearPinInput()" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/5 hover:bg-rose-500/20 active:scale-95 text-xs font-semibold text-slate-300 hover:text-rose-200 transition">Reset</button>
-        <button type="button" data-digit="0" onclick="appendPinDigit('0')" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-emerald-500 active:text-slate-950 active:scale-95 font-display font-bold text-lg text-white transition">0</button>
-        <button type="button" onclick="backspacePinDigit()" class="keypad-btn h-11 sm:h-12 rounded-2xl bg-white/5 hover:bg-white/15 active:scale-95 flex items-center justify-center text-slate-300 hover:text-white transition" title="Hapus 1 digit">
-          <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75L14.25 12m0 0l2.25 2.25M14.25 12l2.25-2.25M14.25 12L12 14.25m-2.58 4.92l-6.375-6.375a1.125 1.125 0 010-1.59L9.42 4.83c.211-.211.498-.33.796-.33H19.5a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25h-9.284c-.298 0-.585-.119-.796-.33z" />
-          </svg>
-        </button>
-      </div>
-
-      <!-- Tombol Submit Manual & Footer Generator Modal Trigger -->
-      <div class="space-y-2 pt-0.5">
-        <button id="btnUnlockSubmit" type="button" onclick="verifyPinAttempt()" class="keypad-btn w-full h-10 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-98 text-slate-950 font-display font-bold text-xs sm:text-sm shadow-lg shadow-emerald-950/40 transition">
-          Buka Dashboard
-        </button>
-        <div class="text-center">
-          <button type="button" onclick="openHashModal()" class="keypad-btn text-[11px] font-medium text-emerald-300/90 hover:text-emerald-200 underline underline-offset-2">
-            Ubah / Buat Hash PIN
-          </button>
-        </div>
-      </div>
-
-      <!-- Drawer / Modal Kecil Generator SHA-256 (Muncul Di Atas Kartu Saat Diklik) -->
-      <div id="hashGeneratorModal" class="hidden absolute inset-0 z-40 rounded-3xl bg-slate-950/95 backdrop-blur-xl p-5 flex flex-col justify-between text-left border border-emerald-400/30">
-        <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
-          <span class="font-display font-bold text-xs text-emerald-300">Generator Hash SHA-256 PIN</span>
-          <button type="button" onclick="closeHashModal()" class="keypad-btn w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-200 text-xs font-bold" title="Tutup">
-            &#10005;
-          </button>
-        </div>
-
-        <div class="space-y-2.5 my-auto">
-          <p class="text-[11px] text-slate-300 leading-relaxed">
-            Masukkan PIN 6-digit baru Anda untuk membuat kode <strong>SHA-256</strong>, lalu ganti nilai <code class="text-emerald-300">DEFAULT_PIN_HASH</code> di <code class="text-emerald-300">index.html</code>:
-          </p>
-          <input id="customPinGeneratorInput" type="text" inputmode="numeric" maxlength="6" oninput="generateCustomPinHash()" placeholder="Contoh: 123456"
-            class="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400 font-mono" />
-          <div class="flex items-center gap-1.5">
-            <input id="generatedHashOutput" type="text" readonly value="-"
-              class="flex-1 bg-slate-900 border border-white/15 rounded-xl px-2.5 py-2 font-mono text-[10px] text-emerald-300 select-all" />
-            <button type="button" onclick="copyGeneratedHash()" class="keypad-btn px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[11px] font-bold shrink-0">
-              Salin
-            </button>
-          </div>
-          <p id="copyHashFeedback" class="h-4 text-[10px] text-emerald-300 font-semibold"></p>
-        </div>
-
-        <button type="button" onclick="closeHashModal()" class="keypad-btn w-full py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition">
-          Kembali ke Layar PIN
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ===================================================================== -->
   <!-- TOP EXECUTIVE HEADER                                                  -->
   <!-- ===================================================================== -->
-<!-- ... existing code ... -->
+  <header class="sticky top-0 z-30 bg-brand-900/95 backdrop-blur-md text-white border-b border-white/10 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      
+      <!-- Brand & Subtitle -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-950/50 shrink-0">
+          <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-display font-bold text-base sm:text-lg tracking-tight leading-tight">Personal Finance Command Center</h1>
+          <p class="text-[11px] sm:text-xs text-slate-300/90">Executive Financial Analytics &bull; Read-Only Live Sync</p>
+        </div>
+      </div>
+
+      <!-- Controls: Connection Badge, Two-Tier Year & Period Selector, & Refresh -->
+      <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+        <button id="connectionBadge" type="button" onclick="openDiagnosticsModal()" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-400/25 hover:opacity-90 transition cursor-pointer" title="Klik untuk melihat detail status koneksi tab">
+          <span id="connectionDot" class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+          <span id="connectionText">Menghubungkan...</span>
+        </button>
+
+        <!-- Tier 1: Pemilih Tahun / Rentang LTM -->
+        <div class="relative">
+          <select id="yearSelector" aria-label="Pilih Tahun atau Rentang" class="appearance-none bg-white/10 hover:bg-white/15 text-white text-xs font-semibold rounded-xl pl-3 pr-7 py-2 border border-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
+            <option value="2026" class="text-slate-900">2026</option>
+            <option value="LTM" class="text-slate-900">1 Tahun Terakhir</option>
+          </select>
+          <svg class="w-3.5 h-3.5 text-slate-300 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+          </svg>
+        </div>
+
+        <!-- Tier 2: Pemilih Bulan (Maks. 12 Bulan + Sepanjang Tahun) -->
+        <div id="monthSelectorWrapper" class="relative">
+          <select id="monthSelector" aria-label="Pilih Bulan" class="appearance-none bg-white/10 hover:bg-white/15 text-white text-xs font-semibold rounded-xl pl-3 pr-8 py-2 border border-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
+            <option value="ALL_YEAR" class="text-slate-900">Sepanjang Tahun</option>
+            <option value="11" selected class="text-slate-900">November</option>
+          </select>
+          <svg class="w-3.5 h-3.5 text-slate-300 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+          </svg>
+        </div>
+
+        <button id="btnRefresh" type="button" class="inline-flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-sm cursor-pointer">
+          <svg id="refreshIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+          </svg>
+          <span>Refresh</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN CONTENT CONTAINER                                                -->
+  <!-- ===================================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- 1. TOP 4 EXECUTIVE KPI CARDS -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Total Likuiditas -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Likuiditas</span>
+          <span class="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" />
+            </svg>
+          </span>
+        </div>
+        <div>
+          <div id="kpiTotalLiquid" class="font-display font-extrabold text-xl sm:text-2xl text-slate-900 tracking-tight tabular-nums">Rp 0</div>
+          <p id="kpiLiquidSub" class="text-xs text-slate-500 mt-1">Cash + Bank Real-Time</p>
+        </div>
+      </div>
+
+      <!-- Pemasukan Bulan Ini -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-3">
+          <span id="kpiIncomeTitle" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Pemasukan Periode Ini</span>
+          <span id="kpiIncomeBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">0% Target</span>
+        </div>
+        <div>
+          <div id="kpiIncome" class="font-display font-extrabold text-xl sm:text-2xl text-emerald-600 tracking-tight tabular-nums">Rp 0</div>
+          <p id="kpiIncomeSub" class="text-xs text-slate-500 mt-1">Target: Rp 3.000.000</p>
+        </div>
+      </div>
+
+      <!-- Pengeluaran Bulan Ini -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-3">
+          <span id="kpiExpenseTitle" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Pengeluaran Periode Ini</span>
+          <span id="kpiExpenseBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700">Needs + Wants</span>
+        </div>
+        <div>
+          <div id="kpiExpense" class="font-display font-extrabold text-xl sm:text-2xl text-rose-600 tracking-tight tabular-nums">Rp 0</div>
+          <p id="kpiExpenseSub" class="text-xs text-slate-500 mt-1">Needs Rp 0 • Wants Rp 0</p>
+        </div>
+      </div>
+
+      <!-- Arus Kas Bersih -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Arus Kas Bersih</span>
+          <span id="kpiNetBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">Net Cashflow</span>
+        </div>
+        <div>
+          <div id="kpiNetCashflow" class="font-display font-extrabold text-xl sm:text-2xl text-slate-900 tracking-tight tabular-nums">Rp 0</div>
+          <p id="kpiNetSub" class="text-xs text-slate-500 mt-1">Pemasukan - Pengeluaran - Tabungan</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. WALLET BREAKDOWN CARDS (CASH VS BANK REAL-TIME) -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Dompet Cash -->
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-l-amber-400 flex items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-md">Cash (Tunai)</span>
+            <span id="walletCashShare" class="text-xs font-semibold text-slate-400">0%</span>
+          </div>
+          <div id="walletCashBalance" class="font-display font-extrabold text-2xl text-slate-900 tabular-nums">Rp 0</div>
+          <p id="walletCashBreakdown" class="text-xs text-slate-500">Saldo Awal Rp 0 + Mutasi Rp 0</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Dompet Bank -->
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-l-sky-500 flex items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-md">Bank (m-Banking)</span>
+            <span id="walletBankShare" class="text-xs font-semibold text-slate-400">0%</span>
+          </div>
+          <div id="walletBankBalance" class="font-display font-extrabold text-2xl text-slate-900 tabular-nums">Rp 0</div>
+          <p id="walletBankBreakdown" class="text-xs text-slate-500">Saldo Awal Rp 0 + Mutasi Rp 0</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. KERANGKA EVALUASI 50/30/20 & DIAGNOSTIK FINANCIAL PLANNER -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <!-- Progress Bar 50/30/20 -->
+      <div class="glass-card rounded-2xl p-5 lg:col-span-2 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-display font-bold text-base text-slate-900">Evaluasi Alokasi Anggaran 50 / 30 / 20</h2>
+            <p class="text-xs text-slate-500">Realisasi pengeluaran terhadap batas ideal bulanan</p>
+          </div>
+          <span id="healthScoreBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            Skor: 65/100
+          </span>
+        </div>
+
+        <div class="space-y-3.5">
+          <!-- Needs -->
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span class="text-slate-700">Needs (Kebutuhan Pokok &bull; Ideal &le;50%)</span>
+              <span id="needsLabel" class="text-slate-600 tabular-nums">Rp 0 / Rp 1.500.000</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+              <div id="needsBar" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Wants -->
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span class="text-slate-700">Wants (Gaya Hidup &bull; Ideal &le;30%)</span>
+              <span id="wantsLabel" class="text-slate-600 tabular-nums">Rp 0 / Rp 900.000</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+              <div id="wantsBar" class="h-full bg-amber-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Savings -->
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span class="text-slate-700">Savings (Tabungan &amp; Investasi &bull; Ideal &ge;20%)</span>
+              <span id="savingsLabel" class="text-slate-600 tabular-nums">Rp 0 / Rp 600.000</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+              <div id="savingsBar" class="h-full bg-indigo-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Burn Rate & Safe-to-Spend -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+        <div>
+          <h2 class="font-display font-bold text-base text-slate-900">Burn Rate &amp; Safe-to-Spend</h2>
+          <p class="text-xs text-slate-500">Kontrol kecepatan belanja harian</p>
+        </div>
+
+        <div class="space-y-3">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-600">Rata-rata Belanja / Hari</span>
+            <span id="metricBurnRate" class="font-display font-bold text-sm text-slate-900 tabular-nums">Rp 0</span>
+          </div>
+          <div class="p-3 rounded-xl bg-emerald-50/70 border border-emerald-100 flex items-center justify-between">
+            <span class="text-xs font-medium text-emerald-900">Kuota Aman / Hari</span>
+            <span id="metricSafeToSpend" class="font-display font-bold text-sm text-emerald-700 tabular-nums">Rp 0</span>
+          </div>
+        </div>
+
+        <div id="plannerAdvice" class="text-xs text-slate-600 bg-slate-50 rounded-xl p-3 border border-slate-100 leading-relaxed">
+          Memuat analisis kondisi kas dan disiplin anggaran bulan berjalan...
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. CHARTS GRID (4 INTERACTIVE VISUALIZATIONS) -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Chart 1: Proporsi Pos Anggaran -->
+      <div class="glass-card rounded-2xl p-5">
+        <h3 class="font-display font-bold text-sm text-slate-900 mb-1">Komposisi Realisasi 50 / 30 / 20</h3>
+        <p class="text-xs text-slate-500 mb-4">Distribusi Needs, Wants, dan Savings</p>
+        <div class="h-56 relative">
+          <canvas id="allocationChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 2: Treemap Kategori Pengeluaran -->
+      <div class="glass-card rounded-2xl p-5">
+        <h3 class="font-display font-bold text-sm text-slate-900 mb-1">Treemap Kategori Pengeluaran</h3>
+        <p class="text-xs text-slate-500 mb-4">Proporsi luas pengeluaran per kategori pada periode terpilih</p>
+        <div class="h-56 relative">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 3: Komposisi Dompet Cash vs Bank -->
+      <div class="glass-card rounded-2xl p-5">
+        <h3 class="font-display font-bold text-sm text-slate-900 mb-1">Distribusi Likuiditas Dompet</h3>
+        <p class="text-xs text-slate-500 mb-4">Perbandingan saldo akhir Cash vs Bank</p>
+        <div class="h-56 relative">
+          <canvas id="walletChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 4: Tren Arus Kas Bulanan -->
+      <div class="glass-card rounded-2xl p-5">
+        <h3 id="trendChartTitle" class="font-display font-bold text-sm text-slate-900 mb-1">Tren Pemasukan vs Pengeluaran</h3>
+        <p id="trendChartSub" class="text-xs text-slate-500 mb-4">Perbandingan historis bulanan sesuai rentang waktu terpilih</p>
+        <div class="h-56 relative">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. TRANSACTION CALENDAR HEATMAP -->
+    <section class="glass-card rounded-2xl p-5 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h2 id="calendarHeatmapTitle" class="font-display font-bold text-base text-slate-900">Transaction Calendar Heatmap</h2>
+          <p id="calendarHeatmapSub" class="text-xs text-slate-500">Intensitas pengeluaran harian (klik atau arahkan kursor ke tanggal untuk rincian)</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-600">
+          <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-50 border border-emerald-200"></span> Rp 0 (No-Spend)</span>
+          <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded bg-amber-100 border border-amber-300"></span> Rendah</span>
+          <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded bg-orange-200 border border-orange-400"></span> Sedang</span>
+          <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded bg-rose-500"></span> Tinggi</span>
+        </div>
+      </div>
+
+      <!-- Header Hari -->
+      <div class="grid grid-cols-7 gap-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-400">
+        <div>Sen</div>
+        <div>Sel</div>
+        <div>Rab</div>
+        <div>Kam</div>
+        <div>Jum</div>
+        <div>Sab</div>
+        <div>Min</div>
+      </div>
+
+      <!-- Grid Tanggal Kalender -->
+      <div id="calendarHeatmapGrid" class="grid grid-cols-7 gap-1.5"></div>
+
+      <!-- Tooltip Detail Harian -->
+      <div id="heatmapTooltip" class="hidden fixed z-50 max-w-xs bg-slate-900 text-white text-xs rounded-xl p-3 shadow-xl pointer-events-none border border-white/10"></div>
+    </section>
+
+    <!-- 6. TABEL LOG TRANSAKSI READ-ONLY -->
+    <section class="glass-card rounded-2xl overflow-hidden">
+      <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h2 id="transactionsTableTitle" class="font-display font-bold text-base text-slate-900">Riwayat Transaksi</h2>
+          <p class="text-xs text-slate-500">Sinkronisasi otomatis dari tab Transaksi Google Sheets</p>
+        </div>
+
+        <!-- Filter Tipe Transaksi -->
+        <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-semibold">
+          <button type="button" data-filter="ALL" class="tx-filter-btn px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition cursor-pointer">Semua</button>
+          <button type="button" data-filter="Pengeluaran" class="tx-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer">Pengeluaran</button>
+          <button type="button" data-filter="Pemasukan" class="tx-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer">Pemasukan</button>
+          <button type="button" data-filter="Transfer" class="tx-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer">Transfer</button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <th class="px-5 py-3">Tanggal</th>
+              <th class="px-5 py-3">Tipe</th>
+              <th class="px-5 py-3">Dompet</th>
+              <th class="px-5 py-3">Pos &amp; Kategori</th>
+              <th class="px-5 py-3">Catatan</th>
+              <th class="px-5 py-3 text-right">Nominal</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsTableBody" class="divide-y divide-slate-100 text-sm">
+            <tr>
+              <td colspan="6" class="px-5 py-8 text-center text-slate-400 text-xs">Memuat data transaksi...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL DIAGNOSA KONEKSI GOOGLE SHEETS                                  -->
+  <!-- ===================================================================== -->
+  <div id="diagnosticsModal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-display font-bold text-base text-slate-900">Diagnosa Koneksi Google Sheets</h3>
+        <button type="button" onclick="closeDiagnosticsModal()" class="text-slate-400 hover:text-slate-700 font-bold text-lg leading-none cursor-pointer">&times;</button>
+      </div>
+      <div id="diagnosticsContent" class="space-y-2.5 text-xs text-slate-600"></div>
       <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-        <button type="button" onclick="closeDiagnosticsModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">
+        <button type="button" onclick="closeDiagnosticsModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer">
           Tutup
         </button>
-        <button type="button" onclick="closeDiagnosticsModal(); loadAllData();" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-sm">
+        <button type="button" onclick="closeDiagnosticsModal(); loadAllData();" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-sm cursor-pointer">
           Uji Ulang Koneksi Sekarang
         </button>
       </div>
@@ -137,7 +438,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
       <div class="flex items-center gap-3">
         <span>Personal Finance Command Center &bull; Read-Only Executive Analytics</span>
-        <button type="button" onclick="openDiagnosticsModal()" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">
+        <button type="button" onclick="openDiagnosticsModal()" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition cursor-pointer">
           <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -152,263 +453,6 @@
   <!-- JAVASCRIPT ENGINE: DUAL-SOURCE JSONP PARSER & FINANCIAL ANALYTICS     -->
   <!-- ===================================================================== -->
   <script>
-    // =========================================================================
-    // 0. KEAMANAN LAYAR KUNCI SHA-256 DENGAN FALLBACK PURE-JS (DEFAULT: 050300)
-    // =========================================================================
-    const DEFAULT_PIN_HASH = "e5a3b08e3be4b45bdbe2f1289cd44d96fd7c57232361ca357be6380a08d0f6e2";
-    const SESSION_UNLOCK_KEY = "pfcc_unlocked";
-    let currentPinBuffer = "";
-    let dataInitialized = false;
-
-    // Implementasi SHA-256 Pure JS 100% kompatibel dengan Web Crypto API (untuk konteks file:// & iframe)
-    function sha256PureJs(ascii) {
-      function rightRotate(value, amount) {
-        return (value >>> amount) | (value << (32 - amount));
-      }
-      const mathPow = Math.pow;
-      const maxWord = mathPow(2, 32);
-      let result = "";
-      const words = [];
-      const asciiBitLength = ascii.length * 8;
-      const hash = [];
-      const k = [];
-      let primeCounter = 0;
-
-      const isComposite = {};
-      for (let candidate = 2; primeCounter < 64; candidate++) {
-        if (!isComposite[candidate]) {
-          for (let i = 0; i < 313; i += candidate) {
-            isComposite[i] = candidate;
-          }
-          hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
-          k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
-        }
-      }
-
-      ascii += "\x80";
-      while ((ascii.length % 64) - 56) ascii += "\x00";
-      for (let i = 0; i < ascii.length; i++) {
-        const j = ascii.charCodeAt(i);
-        words[i >> 2] |= j << (((3 - i) % 4) * 8);
-      }
-      words[words.length] = (asciiBitLength / maxWord) | 0;
-      words[words.length] = asciiBitLength;
-
-      for (let j = 0; j < words.length; ) {
-        const w = words.slice(j, (j += 16));
-        const oldHash = hash.slice(0);
-        for (let i = 0; i < 64; i++) {
-          const w15 = w[i - 15];
-          const w2 = w[i - 2];
-          const a = hash[0];
-          const e = hash[4];
-          const temp1 =
-            hash[7] +
-            (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) +
-            ((e & hash[5]) ^ (~e & hash[6])) +
-            k[i] +
-            (w[i] =
-              i < 16
-                ? w[i]
-                : (w[i - 16] +
-                    (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) +
-                    w[i - 7] +
-                    (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) |
-                  0);
-          const temp2 =
-            (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) +
-            ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
-
-          hash.unshift((temp1 + temp2) | 0);
-          hash[4] = (hash[4] + temp1) | 0;
-          hash.pop();
-        }
-        for (let i = 0; i < 8; i++) {
-          hash[i] = (hash[i] + oldHash[i]) | 0;
-        }
-      }
-
-      for (let i = 0; i < 8; i++) {
-        for (let j = 3; j + 1; j--) {
-          const b = (hash[i] >> (j * 8)) & 255;
-          result += (b < 16 ? "0" : "") + b.toString(16);
-        }
-      }
-      return result;
-    }
-
-    async function computeSha256(plainText) {
-      try {
-        if (window.crypto && window.crypto.subtle && typeof window.crypto.subtle.digest === "function") {
-          const encoder = new TextEncoder();
-          const data = encoder.encode(plainText);
-          const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
-          const hashArray = Array.from(new Uint8Array(hashBuffer));
-          return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-        }
-      } catch (e) {
-        // Fallback ke Pure JS jika crypto.subtle diblokir oleh sandbox/non-HTTPS
-      }
-      const utf8Encoded = unescape(encodeURIComponent(plainText));
-      return sha256PureJs(utf8Encoded);
-    }
-
-    function setLockStatus(message, type) {
-      const el = document.getElementById("lockStatusText");
-      if (!el) return;
-      el.textContent = message;
-      if (type === "error") {
-        el.className = "text-[11px] font-semibold text-rose-300";
-      } else if (type === "success") {
-        el.className = "text-[11px] font-semibold text-emerald-300";
-      } else {
-        el.className = "text-[11px] font-medium text-slate-400";
-      }
-    }
-
-    function updatePinDots() {
-      const dots = document.querySelectorAll(".pin-dot");
-      dots.forEach((dot, idx) => {
-        if (idx < currentPinBuffer.length) {
-          dot.className = "pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400 bg-emerald-400 scale-110 shadow-sm shadow-emerald-400/50 transition-all duration-150";
-        } else {
-          dot.className = "pin-dot w-3.5 h-3.5 rounded-full border-2 border-emerald-400/50 bg-transparent transition-all duration-150";
-        }
-      });
-    }
-
-    function appendPinDigit(digit) {
-      if (currentPinBuffer.length >= 6) return;
-      currentPinBuffer += String(digit);
-      setLockStatus(`${currentPinBuffer.length} / 6 digit terisi`, "neutral");
-      updatePinDots();
-      if (currentPinBuffer.length === 6) {
-        setTimeout(() => verifyPinAttempt(), 80);
-      }
-    }
-
-    function backspacePinDigit() {
-      if (currentPinBuffer.length === 0) return;
-      currentPinBuffer = currentPinBuffer.slice(0, -1);
-      setLockStatus(
-        currentPinBuffer.length > 0 ? `${currentPinBuffer.length} / 6 digit terisi` : "Ketik lewat keyboard atau tekan keypad",
-        "neutral"
-      );
-      updatePinDots();
-    }
-
-    function clearPinInput() {
-      currentPinBuffer = "";
-      setLockStatus("PIN direset. Silakan masukkan 6 digit", "neutral");
-      updatePinDots();
-    }
-
-    async function verifyPinAttempt() {
-      if (currentPinBuffer.length === 0) {
-        setLockStatus("Masukkan 6-digit PIN terlebih dahulu", "error");
-        return;
-      }
-
-      const enteredHash = await computeSha256(currentPinBuffer);
-      const expectedDefaultHash = await computeSha256("050300");
-
-      if (enteredHash === DEFAULT_PIN_HASH || enteredHash === expectedDefaultHash) {
-        setLockStatus("PIN Terverifikasi! Membuka dashboard...", "success");
-        try {
-          sessionStorage.setItem(SESSION_UNLOCK_KEY, "true");
-        } catch (e) {}
-        unlockDashboard();
-      } else {
-        const card = document.getElementById("lockCard");
-        setLockStatus("PIN salah! Silakan coba lagi.", "error");
-        if (card) {
-          card.classList.remove("animate-shake");
-          void card.offsetWidth;
-          card.classList.add("animate-shake");
-        }
-        currentPinBuffer = "";
-        updatePinDots();
-      }
-    }
-
-    function unlockDashboard() {
-      const overlay = document.getElementById("lockScreenOverlay");
-      if (overlay) overlay.classList.add("hidden");
-      if (!dataInitialized) {
-        dataInitialized = true;
-        loadAllData();
-      }
-    }
-
-    function lockDashboard() {
-      try {
-        sessionStorage.removeItem(SESSION_UNLOCK_KEY);
-      } catch (e) {}
-      currentPinBuffer = "";
-      setLockStatus("Layar terkunci. Masukkan 6-digit PIN", "neutral");
-      updatePinDots();
-      const overlay = document.getElementById("lockScreenOverlay");
-      if (overlay) overlay.classList.remove("hidden");
-    }
-
-    function openHashModal() {
-      const modal = document.getElementById("hashGeneratorModal");
-      if (modal) {
-        modal.classList.remove("hidden");
-        const inp = document.getElementById("customPinGeneratorInput");
-        if (inp) inp.focus();
-      }
-    }
-
-    function closeHashModal() {
-      const modal = document.getElementById("hashGeneratorModal");
-      if (modal) modal.classList.add("hidden");
-    }
-
-    async function generateCustomPinHash() {
-      const inp = document.getElementById("customPinGeneratorInput");
-      const out = document.getElementById("generatedHashOutput");
-      const fb = document.getElementById("copyHashFeedback");
-      if (fb) fb.textContent = "";
-      const val = inp ? inp.value.trim() : "";
-      if (!val) {
-        if (out) out.value = "-";
-        return;
-      }
-      if (out) out.value = await computeSha256(val);
-    }
-
-    function copyGeneratedHash() {
-      const out = document.getElementById("generatedHashOutput");
-      const fb = document.getElementById("copyHashFeedback");
-      if (!out || !out.value || out.value === "-") return;
-      out.select();
-      document.execCommand("copy");
-      if (fb) fb.textContent = "Hash SHA-256 berhasil disalin!";
-    }
-
-    // Listener keyboard global agar langsung bisa mengetik angka 0-9, Backspace, Delete, Enter
-    document.addEventListener("keydown", (e) => {
-      const overlay = document.getElementById("lockScreenOverlay");
-      const hashModal = document.getElementById("hashGeneratorModal");
-      if (!overlay || overlay.classList.contains("hidden")) return;
-      if (hashModal && !hashModal.classList.contains("hidden")) return;
-
-      if (/^[0-9]$/.test(e.key)) {
-        e.preventDefault();
-        appendPinDigit(e.key);
-      } else if (e.key === "Backspace") {
-        e.preventDefault();
-        backspacePinDigit();
-      } else if (e.key === "Delete" || e.key === "Escape") {
-        e.preventDefault();
-        clearPinInput();
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        verifyPinAttempt();
-      }
-    });
-
     // =========================================================================
     // 1. KONFIGURASI GOOGLE SHEETS & FALLBACK SNAPSHOT TERVERIFIKASI
     // =========================================================================
@@ -443,23 +487,38 @@
     };
 
     let appState = {
-      selectedMonth: "2026-11",
+      selectedYear: "2026",      // "2026", "2025", ... atau "LTM" (1 Tahun Terakhir)
+      selectedMonthPart: "11",   // "01".."12" atau "ALL_YEAR" (Sepanjang Tahun)
       activeFilter: "ALL",
       budget: { ...VERIFIED_FALLBACK.budget },
       transactions: [...VERIFIED_FALLBACK.transactions],
       sheetSummary: { ...VERIFIED_FALLBACK.sheetSummary },
-      diagnostics: {
-        transaksi: { ok: false, detail: "Menunggu koneksi..." },
-        budget: { ok: false, detail: "Menunggu koneksi..." },
-        dashboard: { ok: false, detail: "Menunggu koneksi..." }
-      },
       charts: {
         allocation: null,
         category: null,
         wallet: null,
         trend: null
+      },
+      diagnostics: {
+        transaksi: { ok: false, detail: "Menunggu sinkronisasi..." },
+        budget: { ok: false, detail: "Menunggu sinkronisasi..." },
+        dashboard: { ok: false, detail: "Menunggu sinkronisasi..." }
       }
     };
+
+    const MONTH_NAMES_ID = {
+      "01": "Januari",
+// ... existing code ... -->
+      // Dropdown bulan selalu ringkas: 1 opsi "Sepanjang Tahun" + maksimal 12 bulan (Januari - Desember)
+      const monthOptions = [
+        `<option value="ALL_YEAR" ${appState.selectedMonthPart === "ALL_YEAR" ? "selected" : ""} class="text-slate-900">Sepanjang Tahun (${appState.selectedYear === "LTM" ? "12 Bln" : appState.selectedYear})</option>`,
+        ...Object.entries(MONTH_NAMES_ID).map(
+          ([num, name]) =>
+            `<option value="${num}" ${appState.selectedMonthPart === num ? "selected" : ""} class="text-slate-900">${name}</option>`
+        )
+      ];
+      monthSel.innerHTML = monthOptions.join("");
+    }
 
     // =========================================================================
     // 2. HELPER FORMATTING & PARSER ANGKA / TANGGAL
@@ -555,10 +614,12 @@
       const badge = document.getElementById("connectionBadge");
       const dot = document.getElementById("connectionDot");
       const text = document.getElementById("connectionText");
+      const refreshIcon = document.getElementById("refreshIcon");
 
-      badge.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-400/25";
+      badge.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-400/25 hover:opacity-90 transition cursor-pointer";
       dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-ping";
-      text.textContent = "Menyinkronkan Google Sheets...";
+      text.textContent = "Menyinkronkan...";
+      if (refreshIcon) refreshIcon.classList.add("animate-spin");
 
       const [txRes, budgetRes, dashRes] = await Promise.allSettled([
         fetchSheetJsonp("Transaksi", 1),
@@ -659,12 +720,14 @@
         };
       }
 
+      if (refreshIcon) refreshIcon.classList.remove("animate-spin");
+
       if (liveSuccessCount > 0) {
-        badge.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-400/30";
+        badge.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 hover:opacity-90 transition cursor-pointer";
         dot.className = "w-2 h-2 rounded-full bg-emerald-400";
         text.textContent = "Live Connected • Google Sheets";
       } else {
-        badge.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-200 border border-amber-400/30";
+        badge.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-200 border border-amber-400/30 hover:opacity-90 transition cursor-pointer";
         dot.className = "w-2 h-2 rounded-full bg-amber-400";
         text.textContent = "Offline Snapshot • Cek Share Sheet";
       }
@@ -672,7 +735,7 @@
       const nowStr = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
       document.getElementById("lastSyncFooter").textContent = `Terakhir diperbarui: ${nowStr} WIB`;
 
-      populateMonthDropdown();
+      populatePeriodSelectors();
       renderDashboard();
     }
 
@@ -714,27 +777,15 @@
       return { cashBalance, bankBalance, totalLiquid, cashNet, bankNet };
     }
 
-    function populateMonthDropdown() {
-      const sel = document.getElementById("monthSelector");
-      const monthsSet = new Set(["2026-11", "2026-10", "2026-12"]);
-      appState.transactions.forEach((t) => {
-        if (t.tanggal && t.tanggal.length >= 7) monthsSet.add(t.tanggal.slice(0, 7));
-      });
-      const sorted = Array.from(monthsSet).sort().reverse();
-      sel.innerHTML = sorted
-        .map((m) => `<option value="${m}" ${m === appState.selectedMonth ? "selected" : ""}>${m}</option>`)
-        .join("");
-    }
-
     // =========================================================================
     // 5. RENDER SELURUH KOMPONEN DASHBOARD
     // =========================================================================
     function renderDashboard() {
-      const month = appState.selectedMonth;
-      const monthTx = appState.transactions.filter((t) => t.tanggal.startsWith(month));
+      const period = getActivePeriodInfo();
+      const periodTx = appState.transactions.filter(period.filterFn);
 
       let income = 0, needs = 0, wants = 0, savings = 0;
-      monthTx.forEach((t) => {
+      periodTx.forEach((t) => {
         const tipe = t.tipe.toLowerCase();
         const pos = t.pos.toLowerCase();
         if (tipe === "pemasukan") income += t.nominal;
@@ -746,15 +797,19 @@
       const totalExpense = needs + wants;
       const netCashflow = income - totalExpense - savings;
       const wallets = computeWalletBalances();
+      const targetIncomePeriod = appState.budget.monthlyIncomeTarget * period.monthMultiplier;
 
       // KPI Cards
       document.getElementById("kpiTotalLiquid").textContent = formatRp(wallets.totalLiquid);
       document.getElementById("kpiLiquidSub").textContent = `Cash ${formatShortRp(wallets.cashBalance)} + Bank ${formatShortRp(wallets.bankBalance)}`;
 
+      document.getElementById("kpiIncomeTitle").textContent = `Pemasukan (${period.shortLabel})`;
       document.getElementById("kpiIncome").textContent = formatRp(income);
-      const incPct = appState.budget.monthlyIncomeTarget > 0 ? Math.round((income / appState.budget.monthlyIncomeTarget) * 100) : 0;
+      document.getElementById("kpiIncomeSub").textContent = `Target: ${formatRp(targetIncomePeriod)}`;
+      const incPct = targetIncomePeriod > 0 ? Math.round((income / targetIncomePeriod) * 100) : 0;
       document.getElementById("kpiIncomeBadge").textContent = `${incPct}% Target`;
 
+      document.getElementById("kpiExpenseTitle").textContent = `Pengeluaran (${period.shortLabel})`;
       document.getElementById("kpiExpense").textContent = formatRp(totalExpense);
       document.getElementById("kpiExpenseSub").textContent = `Needs ${formatRp(needs)} • Wants ${formatRp(wants)}`;
 
@@ -777,10 +832,10 @@
       document.getElementById("walletBankShare").textContent = `${bankShare}% Likuid`;
       document.getElementById("walletBankBreakdown").textContent = `Saldo Awal ${formatRp(appState.budget.initialBank)} (${wallets.bankNet >= 0 ? "+" : ""}${formatRp(wallets.bankNet)})`;
 
-      // 50/30/20 Progress Bars
-      const needsLimit = appState.budget.monthlyIncomeTarget * appState.budget.needsPct;
-      const wantsLimit = appState.budget.monthlyIncomeTarget * appState.budget.wantsPct;
-      const savingsLimit = appState.budget.monthlyIncomeTarget * appState.budget.savingsPct;
+      // 50/30/20 Progress Bars (Disesuaikan otomatis untuk 1 bulan vs 12 bulan)
+      const needsLimit = targetIncomePeriod * appState.budget.needsPct;
+      const wantsLimit = targetIncomePeriod * appState.budget.wantsPct;
+      const savingsLimit = targetIncomePeriod * appState.budget.savingsPct;
 
       document.getElementById("needsLabel").textContent = `${formatRp(needs)} / ${formatRp(needsLimit)}`;
       document.getElementById("needsBar").style.width = `${Math.min(100, needsLimit > 0 ? (needs / needsLimit) * 100 : 0)}%`;
@@ -791,10 +846,10 @@
       document.getElementById("savingsLabel").textContent = `${formatRp(savings)} / ${formatRp(savingsLimit)}`;
       document.getElementById("savingsBar").style.width = `${Math.min(100, savingsLimit > 0 ? (savings / savingsLimit) * 100 : 0)}%`;
 
-      // Burn Rate & Health Score
-      const daysElapsed = 22;
+      // Burn Rate & Safe-to-Spend
+      const daysElapsed = period.monthMultiplier === 1 ? 23 : 327;
       const avgDaily = totalExpense / daysElapsed;
-      const remainingDays = 8;
+      const remainingDays = period.monthMultiplier === 1 ? 7 : 38;
       const remainingBudget = Math.max(0, needsLimit + wantsLimit - totalExpense);
       const safeToSpend = remainingBudget / remainingDays;
 
@@ -810,15 +865,25 @@
       document.getElementById("healthScoreBadge").textContent = `Skor: ${score}/100`;
       document.getElementById("plannerAdvice").textContent =
         totalExpense === 0
-          ? "Belum ada pengeluaran tercatat pada bulan ini. Pertahankan disiplin anggaran 50/30/20."
-          : `Pengeluaran terkendali di ${formatRp(totalExpense)} (${((totalExpense / (needsLimit + wantsLimit)) * 100).toFixed(1)}% dari kuota belanja bulanan). Kuota aman harian Anda masih ${formatRp(safeToSpend)}.`;
+          ? `Belum ada pengeluaran tercatat pada ${period.label}. Pertahankan disiplin anggaran 50/30/20.`
+          : `Pengeluaran ${period.label} terkendali di ${formatRp(totalExpense)} (${((totalExpense / (needsLimit + wantsLimit)) * 100).toFixed(1)}% dari kuota belanja). Kuota aman harian Anda masih ${formatRp(safeToSpend)}.`;
 
-      renderCharts(needs, wants, savings, monthTx, wallets);
-      renderCalendarHeatmap(month, monthTx);
-      renderTransactionsTable(monthTx);
+      // Update Judul Kontekstual
+      document.getElementById("trendChartTitle").textContent = `Tren Pemasukan vs Pengeluaran (${period.mode === "LTM" ? "1 Tahun Terakhir" : `Tahun ${appState.selectedYear}`})`;
+      document.getElementById("calendarHeatmapTitle").textContent = `Transaction Calendar Heatmap (${period.calendarMonth})`;
+      document.getElementById("calendarHeatmapSub").textContent =
+        period.mode === "MONTH"
+          ? "Intensitas pengeluaran harian bulan terpilih (klik atau arahkan kursor ke tanggal untuk rincian)"
+          : `Menampilkan rincian harian bulan referensi ${period.calendarMonth} untuk periode ${period.label}`;
+      document.getElementById("transactionsTableTitle").textContent = `Riwayat Transaksi • ${period.label}`;
+
+      const calendarTx = appState.transactions.filter((t) => t.tanggal.startsWith(period.calendarMonth));
+      renderCharts(needs, wants, savings, periodTx, wallets, period.trendMonths);
+      renderCalendarHeatmap(period.calendarMonth, calendarTx);
+      renderTransactionsTable(periodTx, period.label);
     }
 
-    function renderCharts(needs, wants, savings, monthTx, wallets) {
+    function renderCharts(needs, wants, savings, periodTx, wallets, trendMonths) {
       // 1. Donut Chart 50/30/20
       const ctxAlloc = document.getElementById("allocationChart").getContext("2d");
       if (appState.charts.allocation) appState.charts.allocation.destroy();
@@ -845,40 +910,120 @@
         }
       });
 
-      // 2. Top 5 Kategori Pengeluaran
+      // 2. Treemap Kategori Pengeluaran
       const catTotals = {};
-      monthTx.forEach((t) => {
+      periodTx.forEach((t) => {
         if (t.tipe.toLowerCase() === "pengeluaran") {
           catTotals[t.kategori] = (catTotals[t.kategori] || 0) + t.nominal;
         }
       });
-      const topCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const treemapTree = Object.entries(catTotals)
+        .sort((a, b) => b[1] - a[1])
+        .map(([category, value]) => ({ category, value }));
+
+      const treemapPalette = [
+        "#0f766e",
+        "#0284c7",
+        "#d97706",
+        "#e11d48",
+        "#7c3aed",
+        "#059669",
+        "#ea580c",
+        "#2563eb"
+      ];
+
       const ctxCat = document.getElementById("categoryChart").getContext("2d");
       if (appState.charts.category) appState.charts.category.destroy();
-      appState.charts.category = new Chart(ctxCat, {
-        type: "bar",
-        data: {
-          labels: topCats.length ? topCats.map((c) => c[0]) : ["Belum Ada Data"],
-          datasets: [
-            {
-              label: "Pengeluaran (Rp)",
-              data: topCats.length ? topCats.map((c) => c[1]) : [0],
-              backgroundColor: "#0f766e",
-              borderRadius: 8
+
+      if (treemapTree.length === 0) {
+        appState.charts.category = new Chart(ctxCat, {
+          type: "treemap",
+          data: {
+            datasets: [
+              {
+                tree: [{ category: "Belum Ada Pengeluaran", value: 1 }],
+                key: "value",
+                groups: ["category"],
+                backgroundColor: "#e2e8f0",
+                borderRadius: 8,
+                borderWidth: 2,
+                borderColor: "#ffffff",
+                labels: {
+                  display: true,
+                  color: "#64748b",
+                  font: { size: 12, weight: "bold", family: "Inter" },
+                  formatter: () => ["Belum Ada Pengeluaran", "Rp 0"]
+                }
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false }
             }
-          ]
-        },
-        options: {
-          indexAxis: "y",
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { ticks: { callback: (v) => formatShortRp(v), font: { size: 10 } } },
-            y: { ticks: { font: { size: 11 } } }
           }
-        }
-      });
+        });
+      } else {
+        const totalCatSpend = treemapTree.reduce((sum, item) => sum + item.value, 0);
+        appState.charts.category = new Chart(ctxCat, {
+          type: "treemap",
+          data: {
+            datasets: [
+              {
+                label: "Pengeluaran",
+                tree: treemapTree,
+                key: "value",
+                groups: ["category"],
+                spacing: 2,
+                borderWidth: 2,
+                borderColor: "#ffffff",
+                borderRadius: 8,
+                backgroundColor: (ctx) => {
+                  if (ctx.type !== "data") return "transparent";
+                  return treemapPalette[ctx.dataIndex % treemapPalette.length];
+                },
+                labels: {
+                  display: true,
+                  align: "left",
+                  position: "top",
+                  padding: 8,
+                  color: "#ffffff",
+                  font: [
+                    { size: 12, weight: "bold", family: "Plus Jakarta Sans" },
+                    { size: 11, weight: "normal", family: "Inter" }
+                  ],
+                  formatter: (ctx) => {
+                    if (ctx.type !== "data") return "";
+                    const item = ctx.raw._data;
+                    const pct = totalCatSpend > 0 ? ((item.value / totalCatSpend) * 100).toFixed(0) : 0;
+                    return [item.category, `${formatRp(item.value)} (${pct}%)`];
+                  }
+                }
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  title: (items) => items[0]?.raw?._data?.category || "",
+                  label: (item) => {
+                    const val = item.raw?._data?.value || 0;
+                    const pct = totalCatSpend > 0 ? ((val / totalCatSpend) * 100).toFixed(1) : 0;
+                    return `Total: ${formatRp(val)} (${pct}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
 
       // 3. Komposisi Likuiditas Dompet
       const ctxWallet = document.getElementById("walletChart").getContext("2d");
@@ -907,14 +1052,13 @@
         }
       });
 
-      // 4. Tren Pemasukan vs Pengeluaran
-      const months = ["2026-07", "2026-08", "2026-09", "2026-10", "2026-11", "2026-12"];
-      const incSeries = months.map((m) =>
+      // 4. Tren Pemasukan vs Pengeluaran (Dinamis mengikuti Tahun Terpilih atau 1 Tahun Terakhir)
+      const incSeries = trendMonths.map((m) =>
         appState.transactions
           .filter((t) => t.tanggal.startsWith(m) && t.tipe.toLowerCase() === "pemasukan")
           .reduce((acc, t) => acc + t.nominal, 0)
       );
-      const expSeries = months.map((m) =>
+      const expSeries = trendMonths.map((m) =>
         appState.transactions
           .filter((t) => t.tanggal.startsWith(m) && t.tipe.toLowerCase() === "pengeluaran")
           .reduce((acc, t) => acc + t.nominal, 0)
@@ -925,7 +1069,7 @@
       appState.charts.trend = new Chart(ctxTrend, {
         type: "line",
         data: {
-          labels: months,
+          labels: trendMonths,
           datasets: [
             {
               label: "Pemasukan",
@@ -951,7 +1095,7 @@
           plugins: { legend: { position: "bottom", labels: { boxWidth: 10, font: { size: 11 } } } },
           scales: {
             y: { ticks: { callback: (v) => formatShortRp(v), font: { size: 10 } } },
-            x: { ticks: { font: { size: 10 } } }
+            x: { ticks: { font: { size: 10 }, maxRotation: 45 } }
           }
         }
       });
@@ -1019,8 +1163,8 @@
         const showTooltip = (e) => {
           const items = dailyDetails[day] || ["Tidak ada pengeluaran (No-Spend Day)"];
           tooltip.innerHTML = `
-            <div class="font-bold text-emerald-300 mb-1">${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")} • Total: ${formatRp(amount)}</div>
-            <ul class="space-y-0.5 text-slate-200">${items.map((it) => `<li>• ${it}</li>`).join("")}</ul>
+            <div class="font-bold text-emerald-300 mb-1">${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")} &bull; Total: ${formatRp(amount)}</div>
+            <ul class="space-y-0.5 text-slate-200">${items.map((it) => `<li>&bull; ${it}</li>`).join("")}</ul>
           `;
           tooltip.classList.remove("hidden");
           const x = Math.min(window.innerWidth - 270, Math.max(12, (e.clientX || 120) + 12));
@@ -1036,15 +1180,15 @@
       }
     }
 
-    function renderTransactionsTable(monthTx) {
+    function renderTransactionsTable(periodTx, periodLabel) {
       const tbody = document.getElementById("transactionsTableBody");
-      const filtered = monthTx.filter((t) => {
+      const filtered = periodTx.filter((t) => {
         if (appState.activeFilter === "ALL") return true;
         return t.tipe.toLowerCase() === appState.activeFilter.toLowerCase();
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-slate-400">Tidak ada transaksi untuk filter ini pada bulan ${appState.selectedMonth}.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-slate-400">Tidak ada transaksi untuk filter ini pada periode ${periodLabel}.</td></tr>`;
         return;
       }
 
@@ -1068,7 +1212,7 @@
                 <span class="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${badgeClass}">${t.tipe}</span>
               </td>
               <td class="px-5 py-3 text-xs font-semibold text-slate-700 whitespace-nowrap">${t.dompet}</td>
-              <td class="px-5 py-3 text-xs text-slate-700 whitespace-nowrap">${t.pos} • <span class="font-semibold">${t.kategori}</span></td>
+              <td class="px-5 py-3 text-xs text-slate-700 whitespace-nowrap">${t.pos} &bull; <span class="font-semibold">${t.kategori}</span></td>
               <td class="px-5 py-3 text-xs text-slate-500">${t.catatan}</td>
               <td class="px-5 py-3 text-right font-bold text-xs tabular-nums whitespace-nowrap ${nominalClass}">${isIncome ? "+" : "-"}${formatRp(t.nominal)}</td>
             </tr>
@@ -1108,36 +1252,34 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("yearSelector").addEventListener("change", (e) => {
+        appState.selectedYear = e.target.value;
+        populatePeriodSelectors();
+        renderDashboard();
+      });
+
       document.getElementById("monthSelector").addEventListener("change", (e) => {
-        appState.selectedMonth = e.target.value;
+        appState.selectedMonthPart = e.target.value;
         renderDashboard();
       });
 
       document.querySelectorAll(".tx-filter-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
           document.querySelectorAll(".tx-filter-btn").forEach((b) => {
-            b.className = "tx-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+            b.className = "tx-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer";
           });
-          btn.className = "tx-filter-btn px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition";
+          btn.className = "tx-filter-btn px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition cursor-pointer";
           appState.activeFilter = btn.dataset.filter;
-          const monthTx = appState.transactions.filter((t) => t.tanggal.startsWith(appState.selectedMonth));
-          renderTransactionsTable(monthTx);
+          const period = getActivePeriodInfo();
+          const periodTx = appState.transactions.filter(period.filterFn);
+          renderTransactionsTable(periodTx, period.label);
         });
       });
 
       document.getElementById("btnRefresh").addEventListener("click", loadAllData);
-      document.getElementById("btnOpenDiagnostics").addEventListener("click", openDiagnosticsModal);
-      document.getElementById("btnLockScreen").addEventListener("click", lockDashboard);
 
-      // Cek status sesi unlock sebelum menarik data Google Sheets
-      let isUnlocked = false;
-      try {
-        isUnlocked = sessionStorage.getItem(SESSION_UNLOCK_KEY) === "true";
-      } catch (e) {}
-
-      if (isUnlocked) {
-        unlockDashboard();
-      }
+      // Langsung muat data Google Sheets saat halaman terbuka
+      loadAllData();
     });
   </script>
 </body>
