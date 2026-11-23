@@ -231,7 +231,6 @@
         <div class="flex items-center justify-between">
           <div>
             <h2 class="font-display font-bold text-base text-slate-900">Evaluasi Alokasi Anggaran 50 / 30 / 20</h2>
-            <p class="text-xs text-slate-500">Realisasi pengeluaran terhadap batas ideal bulanan</p>
           </div>
           <span id="healthScoreBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
             Skor: 65/100
@@ -242,7 +241,7 @@
           <!-- Needs -->
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1">
-              <span class="text-slate-700">Needs (Kebutuhan Pokok &bull; Ideal &le;50%)</span>
+              <span class="text-slate-700">Needs (Ideal &le;50%)</span>
               <span id="needsLabel" class="text-slate-600 tabular-nums">Rp 0 / Rp 1.500.000</span>
             </div>
             <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
@@ -253,7 +252,7 @@
           <!-- Wants -->
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1">
-              <span class="text-slate-700">Wants (Gaya Hidup &bull; Ideal &le;30%)</span>
+              <span class="text-slate-700">Wants (Ideal &le;30%)</span>
               <span id="wantsLabel" class="text-slate-600 tabular-nums">Rp 0 / Rp 900.000</span>
             </div>
             <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
@@ -264,7 +263,7 @@
           <!-- Savings -->
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1">
-              <span class="text-slate-700">Savings (Tabungan &amp; Investasi &bull; Ideal &ge;20%)</span>
+              <span class="text-slate-700">Savings (Ideal &ge;20%)</span>
               <span id="savingsLabel" class="text-slate-600 tabular-nums">Rp 0 / Rp 600.000</span>
             </div>
             <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
@@ -311,8 +310,8 @@
 
       <!-- Chart 2: Treemap Kategori Pengeluaran -->
       <div class="glass-card rounded-2xl p-5">
-        <h3 class="font-display font-bold text-sm text-slate-900 mb-1">Treemap Kategori Pengeluaran</h3>
-        <p class="text-xs text-slate-500 mb-4">Proporsi luas pengeluaran per kategori pada periode terpilih</p>
+        <h3 class="font-display font-bold text-sm text-slate-900 mb-1">Top Kategori Pengeluaran</h3>
+        <p class="text-xs text-slate-500 mb-4">Proporsi pengeluaran per kategori</p>
         <div class="h-56 relative">
           <canvas id="categoryChart"></canvas>
         </div>
@@ -330,7 +329,7 @@
       <!-- Chart 4: Tren Arus Kas Bulanan -->
       <div class="glass-card rounded-2xl p-5">
         <h3 id="trendChartTitle" class="font-display font-bold text-sm text-slate-900 mb-1">Tren Pemasukan vs Pengeluaran</h3>
-        <p id="trendChartSub" class="text-xs text-slate-500 mb-4">Perbandingan historis bulanan sesuai rentang waktu terpilih</p>
+        <p id="trendChartSub" class="text-xs text-slate-500 mb-4">Perbandingan historis</p>
         <div class="h-56 relative">
           <canvas id="trendChart"></canvas>
         </div>
@@ -342,7 +341,7 @@
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h2 id="calendarHeatmapTitle" class="font-display font-bold text-base text-slate-900">Transaction Calendar Heatmap</h2>
-          <p id="calendarHeatmapSub" class="text-xs text-slate-500">Intensitas pengeluaran harian (klik atau arahkan kursor ke tanggal untuk rincian)</p>
+          <p id="calendarHeatmapSub" class="text-xs text-slate-500">Intensitas pengeluaran harian</p>
         </div>
         <div class="flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-600">
           <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-50 border border-emerald-200"></span> Rp 0 (No-Spend)</span>
@@ -437,7 +436,7 @@
   <footer class="border-t border-slate-200/80 bg-white mt-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
       <div class="flex items-center gap-3">
-        <span>Personal Finance Command Center &bull; Read-Only Analytics</span>
+        <span>Personal Finance Command Center v1.5 &bull; Read-Only Analytics</span>
         <button type="button" onclick="openDiagnosticsModal()" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition cursor-pointer">
           <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
